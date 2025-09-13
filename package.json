@@ -1,0 +1,24 @@
+{
+  "name": "sprite-garden",
+  "version": "1.0.0",
+  "description": "Sprite Garden",
+  "license": "AGPL-3.0",
+  "author": "Karl Herrick <me@karlherrick.com>",
+  "type": "module",
+  "main": "bin/serve.mjs",
+  "scripts": {
+    "format": "prettier **/*.{html,css,js,mjs} --write",
+    "start": "node bin/serve.mjs",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "devDependencies": {
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-urlrewrite": "^2.0.3",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "prettier": "^3.6.2",
+    "url": "^0.11.4"
+  }
+}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Sprite Garden</title>
+    <link rel="stylesheet" href="styles.css" type="text/css" />
+  </head>
+  <body>
+    <div id="gameContainer">
+      <canvas id="canvas"></canvas>
+
+      <div id="ui">
+        <div>🌱 Sprite Garden</div>
+        <div>Biome: <span id="currentBiome">Forest</span></div>
+        <div>Depth: <span id="currentDepth">Surface</span></div>
+        <div>Total Seeds: <span id="seedCount">0</span></div>
+        <div>Time: <span id="gameTime">0</span>s</div>
+      </div>
+
+      <div id="inventory">
+        <div id="seeds">🎒 Seeds</div>
+        <div>Selected: <span id="selectedSeed">None</span></div>
+        <div>
+          <button class="seed-btn" data-wheat>
+            🌾 <span id="wheatCount">0</span>
+          </button>
+          <button class="seed-btn" data-carrot>
+            🥕 <span id="carrotCount">0</span>
+          </button>
+        </div>
+        <div>
+          <button class="seed-btn" data-mushroom>
+            🍄 <span id="mushroomCount">0</span>
+          </button>
+          <button class="seed-btn" data-cactus>
+            🌵 <span id="cactusCount">0</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="settings">
+        <div style="margin-bottom: 5px">⚙️ Settings</div>
+        <div>
+          <label for="resolutionSelect">Resolution:</label>
+          <select id="resolutionSelect">
+            <option value="400">400x400</option>
+            <option value="fullscreen">Fullscreen</option>
+            <option value="800">800x800</option>
+          </select>
+        </div>
+        <button id="generateNewWorld">🌍 New World</button>
+        <button id="toggleView">🔍 <span id="viewModeText">X-Ray</span></button>
+      </div>
+
+      <div id="controls">
+        <div style="margin-bottom: 5px">⌨️ Controls</div>
+        <div>A/D or ←/→: Move</div>
+        <div>W/↑/Space: Jump</div>
+        <div>E: Plant/Harvest</div>
+        <div>Q: Break Block</div>
+        <div>Mouse: Inspect Tiles</div>
+      </div>
+
+      <!-- Mobile Touch Controls -->
+      <div id="touchControls">
+        <div class="dpad">
+          <div class="touch-btn" data-key="w">↑</div>
+          <div class="touch-btn" data-key="a">←</div>
+          <div class="touch-btn" data-key="d">→</div>
+          <div class="touch-btn" data-key="s">↓</div>
+        </div>
+        <div class="action-buttons">
+          <div class="touch-btn" data-key=" ">🦘</div>
+          <div class="touch-btn" data-key="e">🌱</div>
+          <div class="touch-btn" data-key="q">⛏️</div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./index.mjs"></script>
+  </body>
+</html>
