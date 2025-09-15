@@ -12,7 +12,7 @@ export function harvestCrop(currentState, x, y, cropTile, game, doc) {
 
   const seedType = harvestMap[cropTile.id];
   if (seedType) {
-    // Give player 2-4 seeds when harvesting
+    // Give player 2-4 seeds when harvesting simple crops
     const seedsGained = 2 + Math.floor(Math.random() * 3);
     game.updateState("seedInventory", (inv) => ({
       ...inv,
@@ -22,16 +22,25 @@ export function harvestCrop(currentState, x, y, cropTile, game, doc) {
     // Remove crop from world
     const currentWorld = game.state.world.get();
     currentWorld[x][y] = TILES.AIR;
-
     game.state.world.set([...currentWorld]);
 
-    // Remove from growth timers
+    // Remove from growth timers and plant structures (cleanup)
     const currentTimers = game.state.growthTimers.get();
+    const currentStructures = game.state.plantStructures.get();
+
     const updatedTimers = { ...currentTimers };
+    const updatedStructures = { ...currentStructures };
+
     delete updatedTimers[`${x},${y}`];
+    delete updatedStructures[`${x},${y}`];
 
     game.state.growthTimers.set(updatedTimers);
+    game.state.plantStructures.set(updatedStructures);
 
-    updateInventoryDisplay(game, doc);
+    updateInventoryDisplay(game.state, doc);
+
+    console.log(
+      `Harvested simple ${seedType} crop, gained ${seedsGained} seeds`,
+    );
   }
 }

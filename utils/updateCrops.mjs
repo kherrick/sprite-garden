@@ -25,8 +25,10 @@ export function updateCrops(currentState, game) {
     // Update plant structure growth if structure exists
     if (updatedStructures[key]) {
       const structure = updatedStructures[key];
-      const growthProgress =
-        1 - timer.timeLeft / TILES[timer.seedType].growthTime;
+      const growthProgress = Math.max(
+        0,
+        Math.min(1, 1 - timer.timeLeft / TILES[timer.seedType].growthTime),
+      );
 
       // Clear old plant blocks from the world
       if (structure.blocks) {
@@ -43,7 +45,7 @@ export function updateCrops(currentState, game) {
         });
       }
 
-      // Generate plant structure based on type and growth
+      // Generate new plant structure based on type and growth
       const [x, y] = key.split(",").map(Number);
       structure.blocks = generatePlantStructure(
         x,
@@ -55,7 +57,7 @@ export function updateCrops(currentState, game) {
         WORLD_HEIGHT,
       );
 
-      // Place the plant blocks in the world
+      // Place the new plant blocks in the world
       structure.blocks.forEach((block) => {
         if (
           block.x >= 0 &&
@@ -76,23 +78,6 @@ export function updateCrops(currentState, game) {
       if (updatedStructures[key]) {
         updatedStructures[key].mature = true;
         updatedStructures[key].seedType = timer.seedType;
-      }
-
-      // For simple crops not using structure (optional fallback)
-      const matureTileMap = {
-        WHEAT: TILES.WHEAT,
-        CARROT: TILES.CARROT,
-        MUSHROOM: TILES.MUSHROOM,
-        CACTUS: TILES.CACTUS,
-      };
-
-      const [x, y] = key.split(",").map(Number);
-      if (
-        matureTileMap[timer.seedType] &&
-        currentWorld[x][y] !== matureTileMap[timer.seedType]
-      ) {
-        currentWorld[x][y] = matureTileMap[timer.seedType];
-        worldChanged = true;
       }
 
       delete updatedTimers[key];
@@ -137,14 +122,21 @@ function generatePlantStructure(
     case "CACTUS":
       return generateCactusStructure(x, y, progress, TILES);
     default:
-      return blocks;
+      return [{ x, y, tile: TILES.WHEAT_GROWING }]; // Fallback
   }
 }
 
 function generateWheatStructure(x, y, progress, TILES) {
   const blocks = [];
-  const maxHeight = 5;
-  const currentHeight = Math.ceil(maxHeight * progress);
+
+  // Early stage - just the growing seed
+  if (progress < 0.1) {
+    blocks.push({ x, y, tile: TILES.WHEAT_GROWING });
+    return blocks;
+  }
+
+  const maxHeight = 4;
+  const currentHeight = Math.max(1, Math.ceil(maxHeight * progress));
 
   for (let i = 0; i < currentHeight; i++) {
     const tileY = y - i;
@@ -152,26 +144,27 @@ function generateWheatStructure(x, y, progress, TILES) {
     if (i < currentHeight - 1 || progress < 0.8) {
       // Stalk
       blocks.push({ x, y: tileY, tile: TILES.WHEAT_STALK });
-
-      // Variation with side stalks
-      if (progress > 0.5 && i > 0 && Math.random() < 0.3) {
-        if (Math.random() < 0.5) {
-          blocks.push({ x: x - 1, y: tileY, tile: TILES.WHEAT_STALK });
-        } else {
-          blocks.push({ x: x + 1, y: tileY, tile: TILES.WHEAT_STALK });
-        }
-      }
     } else {
       // Top grains when mature
       blocks.push({ x, y: tileY, tile: TILES.WHEAT_GRAIN });
+    }
 
-      // Add grain clusters
-      if (progress > 0.9) {
-        blocks.push({ x: x - 1, y: tileY, tile: TILES.WHEAT_GRAIN });
-        blocks.push({ x: x + 1, y: tileY, tile: TILES.WHEAT_GRAIN });
-        blocks.push({ x, y: tileY - 1, tile: TILES.WHEAT_GRAIN });
+    // Add side stalks for fuller appearance
+    if (progress > 0.5 && i > 0 && i < currentHeight - 1) {
+      if (Math.random() < 0.4) {
+        blocks.push({ x: x - 1, y: tileY, tile: TILES.WHEAT_STALK });
+      }
+      if (Math.random() < 0.4) {
+        blocks.push({ x: x + 1, y: tileY, tile: TILES.WHEAT_STALK });
       }
     }
+  }
+
+  // Add grain clusters when fully mature
+  if (progress > 0.9) {
+    const topY = y - currentHeight + 1;
+    blocks.push({ x: x - 1, y: topY, tile: TILES.WHEAT_GRAIN });
+    blocks.push({ x: x + 1, y: topY, tile: TILES.WHEAT_GRAIN });
   }
 
   return blocks;
@@ -179,38 +172,30 @@ function generateWheatStructure(x, y, progress, TILES) {
 
 function generateCarrotStructure(x, y, progress, TILES) {
   const blocks = [];
-  // Underground root
+
+  // Early stage
+  if (progress < 0.1) {
+    blocks.push({ x, y, tile: TILES.CARROT_GROWING });
+    return blocks;
+  }
+
+  // Underground root grows first
   if (progress > 0.2) {
-    const rootDepth = Math.ceil(3 * progress);
+    const rootDepth = Math.ceil(2 * progress);
     for (let i = 1; i <= rootDepth; i++) {
       blocks.push({ x, y: y + i, tile: TILES.CARROT_ROOT });
-
-      // Thicker root as it grows
-      if (progress > 0.6 && i < rootDepth) {
-        if (Math.random() < 0.4) {
-          blocks.push({ x: x - 1, y: y + i, tile: TILES.CARROT_ROOT });
-        }
-        if (Math.random() < 0.4) {
-          blocks.push({ x: x + 1, y: y + i, tile: TILES.CARROT_ROOT });
-        }
-      }
     }
   }
 
   // Leaves on top
-  const leafHeight = Math.ceil(2 * progress);
+  const leafHeight = Math.max(1, Math.ceil(2 * progress));
   for (let i = 0; i < leafHeight; i++) {
     blocks.push({ x, y: y - i, tile: TILES.CARROT_LEAVES });
 
-    // Spread leaves
+    // Spread leaves when more mature
     if (progress > 0.5 && i === leafHeight - 1) {
       blocks.push({ x: x - 1, y: y - i, tile: TILES.CARROT_LEAVES });
       blocks.push({ x: x + 1, y: y - i, tile: TILES.CARROT_LEAVES });
-
-      if (progress > 0.8) {
-        blocks.push({ x: x - 1, y: y - i - 1, tile: TILES.CARROT_LEAVES });
-        blocks.push({ x: x + 1, y: y - i - 1, tile: TILES.CARROT_LEAVES });
-      }
     }
   }
 
@@ -219,8 +204,15 @@ function generateCarrotStructure(x, y, progress, TILES) {
 
 function generateMushroomStructure(x, y, progress, TILES) {
   const blocks = [];
-  const maxHeight = 4;
-  const currentHeight = Math.ceil(maxHeight * progress);
+
+  // Early stage
+  if (progress < 0.1) {
+    blocks.push({ x, y, tile: TILES.MUSHROOM_GROWING });
+    return blocks;
+  }
+
+  const maxHeight = 3;
+  const currentHeight = Math.max(1, Math.ceil(maxHeight * progress));
 
   // Stem
   for (let i = 0; i < currentHeight; i++) {
@@ -239,18 +231,9 @@ function generateMushroomStructure(x, y, progress, TILES) {
     }
 
     if (progress > 0.8) {
-      blocks.push({ x: x - 2, y: capY, tile: TILES.MUSHROOM_CAP });
-      blocks.push({ x: x + 2, y: capY, tile: TILES.MUSHROOM_CAP });
       blocks.push({ x: x - 1, y: capY - 1, tile: TILES.MUSHROOM_CAP });
       blocks.push({ x, y: capY - 1, tile: TILES.MUSHROOM_CAP });
       blocks.push({ x: x + 1, y: capY - 1, tile: TILES.MUSHROOM_CAP });
-    }
-
-    // Full cap when mature
-    if (progress > 0.95) {
-      blocks.push({ x: x - 2, y: capY - 1, tile: TILES.MUSHROOM_CAP });
-      blocks.push({ x: x + 2, y: capY - 1, tile: TILES.MUSHROOM_CAP });
-      blocks.push({ x, y: capY - 2, tile: TILES.MUSHROOM_CAP });
     }
   }
 
@@ -259,41 +242,45 @@ function generateMushroomStructure(x, y, progress, TILES) {
 
 function generateCactusStructure(x, y, progress, TILES) {
   const blocks = [];
-  const maxHeight = 6;
-  const currentHeight = Math.ceil(maxHeight * progress);
+
+  // Early stage
+  if (progress < 0.1) {
+    blocks.push({ x, y, tile: TILES.CACTUS_GROWING });
+    return blocks;
+  }
+
+  const maxHeight = 5;
+  const currentHeight = Math.max(1, Math.ceil(maxHeight * progress));
 
   // Main body (vertical column)
   for (let i = 0; i < currentHeight; i++) {
     blocks.push({ x, y: y - i, tile: TILES.CACTUS_BODY });
   }
 
-  // Add left arm
+  // Add left arm when sufficiently grown
   if (progress > 0.4 && currentHeight > 2) {
-    const leftArmY = y - Math.floor(currentHeight * 0.5);
+    const leftArmY = y - Math.floor(currentHeight * 0.6);
     blocks.push({ x: x - 1, y: leftArmY, tile: TILES.CACTUS_BODY });
 
     if (progress > 0.6) {
       blocks.push({ x: x - 1, y: leftArmY - 1, tile: TILES.CACTUS_BODY });
-      blocks.push({ x: x - 1, y: leftArmY - 2, tile: TILES.CACTUS_BODY });
     }
   }
 
   // Add right arm
   if (progress > 0.5 && currentHeight > 3) {
-    const rightArmY = y - Math.ceil(currentHeight * 0.6);
+    const rightArmY = y - Math.floor(currentHeight * 0.7);
     blocks.push({ x: x + 1, y: rightArmY, tile: TILES.CACTUS_BODY });
 
     if (progress > 0.7) {
       blocks.push({ x: x + 1, y: rightArmY - 1, tile: TILES.CACTUS_BODY });
-      blocks.push({ x: x + 1, y: rightArmY - 2, tile: TILES.CACTUS_BODY });
     }
   }
 
   // Flowers on top if fully mature
   if (progress > 0.95) {
-    blocks.push({ x, y: y - currentHeight, tile: TILES.CACTUS_FLOWER });
-    blocks.push({ x: x - 1, y: y - currentHeight, tile: TILES.CACTUS_FLOWER });
-    blocks.push({ x: x + 1, y: y - currentHeight, tile: TILES.CACTUS_FLOWER });
+    const topY = y - currentHeight;
+    blocks.push({ x, y: topY, tile: TILES.CACTUS_FLOWER });
   }
 
   return blocks;

@@ -18,7 +18,7 @@ export function plantSeed(currentState, x, y, seedType, game, doc) {
   };
 
   if (seedTileMap[seedType] && state.seedInventory[seedType] > 0) {
-    // Update world
+    // Update world with initial growing tile
     const currentWorld = game.state.world.get();
     currentWorld[x][y] = seedTileMap[seedType];
     game.state.world.set([...currentWorld]);
@@ -32,11 +32,26 @@ export function plantSeed(currentState, x, y, seedType, game, doc) {
     // Set growth timer
     const growthKey = `${x},${y}`;
     const currentTimers = game.state.growthTimers.get();
+    const currentStructures = game.state.plantStructures.get();
+
+    // Initialize both timer and structure
     game.state.growthTimers.set({
       ...currentTimers,
       [growthKey]: {
         timeLeft: TILES[seedType].growthTime,
         seedType: seedType,
+      },
+    });
+
+    // Initialize plant structure
+    game.state.plantStructures.set({
+      ...currentStructures,
+      [growthKey]: {
+        seedType: seedType,
+        mature: false,
+        blocks: [{ x, y, tile: seedTileMap[seedType] }], // Start with just the seed
+        baseX: x,
+        baseY: y,
       },
     });
 

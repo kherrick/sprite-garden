@@ -1,5 +1,22 @@
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 
+// Helper function to check if a tile position is part of a mature plant structure
+function isMaturePlantPart(x, y, plantStructures) {
+  for (const [key, structure] of Object.entries(plantStructures)) {
+    if (structure.mature && structure.blocks) {
+      const matchingBlock = structure.blocks.find(
+        (block) => block.x === x && block.y === y,
+      );
+
+      if (matchingBlock) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 export function handleBreakBlock(currentState, game, doc) {
   const {
     state,
@@ -39,12 +56,14 @@ export function handleBreakBlock(currentState, game, doc) {
 
         const tile = world[targetX][targetY];
 
-        // Can break most blocks except bedrock, and air
+        // Can break most blocks except bedrock, air, and lava
+        // Also exclude mature plant parts (they should be harvested, not broken)
         if (
           tile &&
           tile !== TILES.AIR &&
           tile !== TILES.BEDROCK &&
-          tile !== TILES.LAVA
+          tile !== TILES.LAVA &&
+          !isMaturePlantPart(targetX, targetY, game.state.plantStructures.get())
         ) {
           // Prioritize blocks in the direction player is facing
           const priority =
@@ -71,12 +90,14 @@ export function handleBreakBlock(currentState, game, doc) {
 
         const tile = world[targetX][targetY];
 
-        // Can break most blocks except bedrock, and air
+        // Can break most blocks except bedrock, air, and lava
+        // Also exclude mature plant parts (they should be harvested, not broken)
         if (
           tile &&
           tile !== TILES.AIR &&
           tile !== TILES.BEDROCK &&
-          tile !== TILES.LAVA
+          tile !== TILES.LAVA &&
+          !isMaturePlantPart(targetX, targetY, game.state.plantStructures.get())
         ) {
           blocksToBreak.push({
             x: targetX,
@@ -104,26 +125,26 @@ export function handleBreakBlock(currentState, game, doc) {
     let inventoryUpdates = {};
 
     blocksToBreak.forEach((block) => {
-      // Check if this is part of a plant structure
-      let isPlantPart = false;
+      // Check if this is part of an immature plant structure (these can be broken)
+      let isImmaturePlantPart = false;
       let plantKey = null;
 
-      // Find if this block is part of any plant structure
+      // Find if this block is part of any immature plant structure
       for (const [key, structure] of Object.entries(currentStructures)) {
-        if (structure.blocks) {
+        if (!structure.mature && structure.blocks) {
           for (const plantBlock of structure.blocks) {
             if (plantBlock.x === block.x && plantBlock.y === block.y) {
-              isPlantPart = true;
+              isImmaturePlantPart = true;
               plantKey = key;
               break;
             }
           }
         }
-        if (isPlantPart) break;
+        if (isImmaturePlantPart) break;
       }
 
-      // If it's part of a plant, remove the entire plant
-      if (isPlantPart && plantKey) {
+      // If it's part of an immature plant, remove the entire plant
+      if (isImmaturePlantPart && plantKey) {
         const structure = currentStructures[plantKey];
         if (structure.blocks) {
           structure.blocks.forEach((plantBlock) => {
@@ -138,11 +159,10 @@ export function handleBreakBlock(currentState, game, doc) {
           });
         }
 
-        // Give seeds when harvesting mature plant
-        if (structure.mature && structure.seedType) {
-          const seedsGained = 3 + Math.floor(Math.random() * 3);
+        // Give small chance to get a seed back when breaking immature plants
+        if (structure.seedType && Math.random() < 0.5) {
           inventoryUpdates[structure.seedType] =
-            (inventoryUpdates[structure.seedType] || 0) + seedsGained;
+            (inventoryUpdates[structure.seedType] || 0) + 1;
         }
 
         delete updatedStructures[plantKey];

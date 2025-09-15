@@ -45,7 +45,7 @@ const configSignals = {
       solid: false,
       farmable: false,
       crop: true,
-      growthTime: 120, //seconds
+      growthTime: 240, //seconds
     },
     CARROT: {
       id: 13,
@@ -53,7 +53,7 @@ const configSignals = {
       solid: false,
       farmable: false,
       crop: true,
-      growthTime: 60, //seconds
+      growthTime: 120, //seconds
     },
     MUSHROOM: {
       id: 14,
@@ -61,7 +61,7 @@ const configSignals = {
       solid: false,
       farmable: false,
       crop: true,
-      growthTime: 30, //seconds
+      growthTime: 60, //seconds
     },
     CACTUS: {
       id: 15,
@@ -69,7 +69,7 @@ const configSignals = {
       solid: true,
       farmable: false,
       crop: true,
-      growthTime: 240, //seconds
+      growthTime: 960, //seconds
     },
     SNOW: { id: 16, color: "#FFFAFA", solid: true, farmable: true },
     ICE: { id: 17, color: "#B0E0E6", solid: true, farmable: false },
