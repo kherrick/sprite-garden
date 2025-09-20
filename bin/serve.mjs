@@ -5,9 +5,12 @@ import compression from "compression";
 import cors from "cors";
 import express from "express";
 import expressUrlrewrite from "express-urlrewrite";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import process, { argv, exit } from "node:process";
+import { fileURLToPath } from "node:url";
+
+import tcpPortUsed from "tcp-port-used";
 
 // get details for the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -17,7 +20,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // define a port
-const port = 3000;
+let port = Number(argv[2]) || 3000
+
+if (port < 1024 || port > 65535) {
+  console.error('Port must be between 1024 and 65535.')
+
+  exit(1);
+}
 
 // enable CORS
 app.use(cors({ origin: `http://localhost:${port}` }));
@@ -69,7 +78,14 @@ app.use(
   }),
 );
 
+const isPortUsed = await tcpPortUsed.check(port, '0.0.0.0')
+if (isPortUsed) {
+  console.error(`Port ${port} is currently being used. Try passing a different port as the first argument.`);
+
+  exit(1);
+}
+
 // start the server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running at http://0.0.0.0:${port}`);
 });
