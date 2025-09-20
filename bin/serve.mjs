@@ -20,10 +20,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // define a port
-let port = Number(argv[2]) || 3000
+let port = Number(argv[2]) || 3000;
 
 if (port < 1024 || port > 65535) {
-  console.error('Port must be between 1024 and 65535.')
+  console.error("Port must be between 1024 and 65535.");
 
   exit(1);
 }
@@ -78,9 +78,11 @@ app.use(
   }),
 );
 
-const isPortUsed = await tcpPortUsed.check(port, '0.0.0.0')
+const isPortUsed = await tcpPortUsed.check(port, "0.0.0.0");
 if (isPortUsed) {
-  console.error(`Port ${port} is currently being used. Try passing a different port as the first argument.`);
+  console.error(
+    `Port ${port} is currently being used. Try passing a different port as the first argument.`,
+  );
 
   exit(1);
 }

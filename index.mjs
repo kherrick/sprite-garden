@@ -346,6 +346,7 @@ function setupTouchControls() {
 
     // Touch start
     btn.addEventListener("touchstart", (e) => {
+      e.stopPropagation();
       e.preventDefault();
       touchKeys[key] = true;
       btn.style.background = "rgba(255, 255, 255, 0.3)";
@@ -368,6 +369,7 @@ function setupTouchControls() {
 
     // Touch end
     btn.addEventListener("touchend", (e) => {
+      e.stopPropagation();
       e.preventDefault();
       touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
@@ -375,6 +377,7 @@ function setupTouchControls() {
 
     // Touch cancel
     btn.addEventListener("touchcancel", (e) => {
+      e.stopPropagation();
       e.preventDefault();
       touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
@@ -382,6 +385,7 @@ function setupTouchControls() {
 
     // Mouse events for desktop testing
     btn.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
       e.preventDefault();
       touchKeys[key] = true;
       btn.style.background = "rgba(255, 255, 255, 0.3)";
@@ -402,12 +406,14 @@ function setupTouchControls() {
     });
 
     btn.addEventListener("mouseup", (e) => {
+      e.stopPropagation();
       e.preventDefault();
       touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
     });
 
     btn.addEventListener("mouseleave", (e) => {
+      e.stopPropagation();
       touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
     });
@@ -920,8 +926,9 @@ function setupTileInspection() {
       clientY = e.clientY;
     }
 
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    const scale = configSignals.canvasScale.get();
+    const scaleX = (canvas.width / rect.width) * scale;
+    const scaleY = (canvas.height / rect.height) * scale;
 
     return {
       x: (clientX - rect.left) * scaleX,
@@ -1057,6 +1064,43 @@ function toggleView() {
   updateUI(getCurrentGameState());
 }
 
+globalThis.document.getElementById("stats").addEventListener("click", (e) => {
+  e.stopPropagation();
+
+  globalThis.document.getElementById("ui-grid").toggleAttribute("hidden");
+});
+
+globalThis.document
+  .getElementById("gameContainer")
+  .addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    const uiGrid = globalThis.document.getElementById("ui-grid");
+
+    if (uiGrid.getAttribute("hidden") !== null) {
+      uiGrid.removeAttribute("hidden");
+    }
+  });
+
+globalThis.document
+  .getElementById("gameContainer")
+  .addEventListener("touchend", (e) => {
+    const uiGrid = globalThis.document.getElementById("ui-grid");
+
+    if (uiGrid.getAttribute("hidden") !== null) {
+      uiGrid.removeAttribute("hidden");
+    }
+  });
+
+globalThis.document
+  .getElementById("controls")
+  .addEventListener("click", (e) => {
+    e.stopPropagation();
+    globalThis.document
+      .getElementById("touchControls")
+      .toggleAttribute("hidden");
+  });
+
 // Prevent default touch behaviors
 globalThis.document.addEventListener(
   "touchstart",
@@ -1154,17 +1198,9 @@ effect(() => {
 
 // Initialize game
 function initGame() {
-  // Set initial resolution - DEFAULTS TO 400x400
-  if (isMobile) {
-    configSignals.currentResolution.set("fullscreen");
-
-    globalThis.document.getElementById("resolutionSelect").style.display =
-      "none";
-  } else {
-    // Set default to 400x400 and update the select element
-    const sel = globalThis.document.getElementById("resolutionSelect");
-    if (sel) sel.value = "400";
-  }
+  // Set default to 400x400 and update the select element
+  const sel = globalThis.document.getElementById("resolutionSelect");
+  if (sel) sel.value = "400";
 
   // Setup event listeners
   globalThis.addEventListener("resize", () =>
