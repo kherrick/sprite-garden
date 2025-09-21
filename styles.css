@@ -97,11 +97,12 @@ body {
   border-radius: 0.5rem;
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   color: white;
-  font-size: 0.625rem;
-  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
   right: 0.625rem;
   top: 0.625rem;
-  z-index: 100;
+  z-index: 1000;
 }
 
 /* Inventory Panel */

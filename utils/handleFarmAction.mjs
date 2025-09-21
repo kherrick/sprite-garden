@@ -22,7 +22,9 @@ function harvestMaturePlant(currentState, structure, structureKey, game, doc) {
 
   // Give seeds when harvesting mature plant
   if (structure.seedType) {
-    const seedsGained = 3 + Math.floor(Math.random() * 4); // 3-6 seeds
+    // 3-6 seeds
+    const seedsGained = 3 + Math.floor(Math.random() * 4);
+
     game.updateState("seedInventory", (inv) => ({
       ...inv,
       [structure.seedType]: inv[structure.seedType] + seedsGained,
@@ -60,71 +62,112 @@ export function handleFarmAction(currentState, game, doc) {
     currentState;
 
   const playerTileX = Math.floor((player.x + player.width / 2) / TILE_SIZE);
-  const playerTileY = Math.floor((player.y + player.height) / TILE_SIZE);
+  const playerTileY = Math.floor((player.y + player.height / 2) / TILE_SIZE);
 
-  // Check tile in front of player (where they're facing)
-  const targetX = playerTileX;
-  const targetY = playerTileY;
+  // Check multiple positions for farming actions
+  const farmingPositions = [];
 
-  if (
-    targetX < 0 ||
-    targetX >= WORLD_WIDTH ||
-    targetY < 0 ||
-    targetY >= WORLD_HEIGHT
-  ) {
-    return;
+  // If player is moving horizontally, check in front of player
+  if (player.lastDirection !== 0) {
+    const dx = player.lastDirection > 0 ? 1 : -1;
+
+    farmingPositions.push({
+      x: playerTileX + dx,
+      y: playerTileY, // Same level as player
+    });
+
+    farmingPositions.push({
+      x: playerTileX + dx,
+      y: playerTileY + 1, // One below player level
+    });
   }
 
-  const currentTile = world[targetX][targetY];
+  // Always check directly below the player
+  farmingPositions.push({
+    x: playerTileX,
+    y: playerTileY + 1,
+  });
 
-  // Check if this position is part of a mature plant structure
-  const plantStructures = game.state.plantStructures.get();
-  let harvestableStructure = null;
-  let structureKey = null;
+  // Also check the tile the player is standing on
+  farmingPositions.push({
+    x: playerTileX,
+    y: playerTileY,
+  });
 
-  // Look for mature plant structures that contain this tile
-  for (const [key, structure] of Object.entries(plantStructures)) {
-    if (structure.mature && structure.blocks) {
-      // Check if any block in the structure matches our target position
-      const matchingBlock = structure.blocks.find(
-        (block) => block.x === targetX && block.y === targetY,
-      );
+  // Try each position until we find something to farm
+  for (const pos of farmingPositions) {
+    const { x: targetX, y: targetY } = pos;
 
-      if (matchingBlock) {
-        harvestableStructure = structure;
-        structureKey = key;
-        break;
+    if (
+      targetX < 0 ||
+      targetX >= WORLD_WIDTH ||
+      targetY < 0 ||
+      targetY >= WORLD_HEIGHT
+    ) {
+      continue;
+    }
+
+    const currentTile = world[targetX][targetY];
+
+    // Check if this position is part of a mature plant structure
+    const plantStructures = game.state.plantStructures.get();
+    let harvestableStructure = null;
+    let structureKey = null;
+
+    // Look for mature plant structures that contain this tile
+    for (const [key, structure] of Object.entries(plantStructures)) {
+      if (structure.mature && structure.blocks) {
+        // Check if any block in the structure matches our target position
+        const matchingBlock = structure.blocks.find(
+          (block) => block.x === targetX && block.y === targetY,
+        );
+
+        if (matchingBlock) {
+          harvestableStructure = structure;
+          structureKey = key;
+
+          break;
+        }
       }
     }
-  }
 
-  // If we found a mature plant structure, harvest it
-  if (harvestableStructure && structureKey) {
-    harvestMaturePlant(
-      currentState,
-      harvestableStructure,
-      structureKey,
-      game,
-      doc,
-    );
-  }
-  // Check for simple crops (fallback for any remaining simple crop tiles)
-  else if (currentTile && currentTile.crop) {
-    harvestCrop(currentState, targetX, targetY, currentTile, game, doc);
-  }
-  // Plant seeds if the tile is empty and we have seeds selected
-  else if (
-    currentTile === TILES.AIR &&
-    state.selectedSeedType &&
-    state.seedInventory[state.selectedSeedType] > 0
-  ) {
-    plantSeed(
-      currentState,
-      targetX,
-      targetY,
-      state.selectedSeedType,
-      game,
-      doc,
-    );
+    // If we found a mature plant structure, harvest it
+    if (harvestableStructure && structureKey) {
+      harvestMaturePlant(
+        currentState,
+        harvestableStructure,
+        structureKey,
+        game,
+        doc,
+      );
+
+      // Exit after successful harvest
+      return;
+    }
+    // Check for simple crops (fallback for any remaining simple crop tiles)
+    else if (currentTile && currentTile.crop) {
+      harvestCrop(currentState, targetX, targetY, currentTile, game, doc);
+
+      // Exit after successful harvest
+      return;
+    }
+    // Plant seeds if the tile is empty and we have seeds selected
+    else if (
+      currentTile === TILES.AIR &&
+      state.selectedSeedType &&
+      state.seedInventory[state.selectedSeedType] > 0
+    ) {
+      plantSeed(
+        currentState,
+        targetX,
+        targetY,
+        state.selectedSeedType,
+        game,
+        doc,
+      );
+
+      // Exit after successful planting
+      return;
+    }
   }
 }

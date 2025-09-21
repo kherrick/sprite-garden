@@ -4,60 +4,42 @@ import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 function isMaturePlantPart(x, y, plantStructures) {
   for (const [key, structure] of Object.entries(plantStructures)) {
     if (structure.mature && structure.blocks) {
-      const matchingBlock = structure.blocks.find(
-        (block) => block.x === x && block.y === y,
-      );
-
-      if (matchingBlock) {
+      if (structure.blocks.find((b) => b.x === x && b.y === y)) {
         return true;
       }
     }
   }
-
   return false;
 }
 
-export function handleBreakBlock(currentState, game, doc) {
-  const {
-    state,
-    player,
-    world,
-    TILES,
-    TILE_SIZE,
-    WORLD_WIDTH,
-    WORLD_HEIGHT,
-    growthTimers,
-    plantStructures,
-  } = currentState;
+export function handleBreakBlock(currentState, game, doc, mode = "regular") {
+  const { player, world, TILES, TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT } =
+    currentState;
 
   const playerTileX = Math.floor((player.x + player.width / 2) / TILE_SIZE);
   const playerTileY = Math.floor((player.y + player.height / 2) / TILE_SIZE);
 
-  // Break in an area around the player - adjust pattern based on movement direction
-  const breakRadius = 2;
   let blocksToBreak = [];
 
-  // If player is moving horizontally, break in a horizontal line
-  if (player.lastDirection !== 0) {
-    // Horizontal breaking pattern
-    for (let dx = -breakRadius; dx <= breakRadius; dx++) {
-      for (let dy = -1; dy <= 1; dy++) {
-        const targetX = playerTileX + dx * (player.lastDirection > 0 ? 1 : 1);
-        const targetY = playerTileY + dy;
+  if (mode === "regular") {
+    if (player.lastDirection !== 0) {
+      // Horizontal travel → always break corridors 3 tiles tall:
+      // the block directly in front of the player, and the 2 directly above.
+      const dx = player.lastDirection > 0 ? 1 : -1;
+
+      for (let dy = 0; dy < 3; dy++) {
+        const targetX = playerTileX + dx; // one tile forward
+        const targetY = playerTileY - dy; // player’s tile (dy=0), +1 above, +2 above
 
         if (
           targetX < 0 ||
           targetX >= WORLD_WIDTH ||
           targetY < 0 ||
           targetY >= WORLD_HEIGHT
-        ) {
+        )
           continue;
-        }
 
         const tile = world[targetX][targetY];
-
-        // Can break most blocks except bedrock, air, and lava
-        // Also exclude mature plant parts (they should be harvested, not broken)
         if (
           tile &&
           tile !== TILES.AIR &&
@@ -65,54 +47,121 @@ export function handleBreakBlock(currentState, game, doc) {
           tile !== TILES.LAVA &&
           !isMaturePlantPart(targetX, targetY, game.state.plantStructures.get())
         ) {
-          // Prioritize blocks in the direction player is facing
-          const priority =
-            Math.abs(dx) === 0 ? 1 : 2 - Math.abs(dx) / breakRadius;
-          blocksToBreak.push({ x: targetX, y: targetY, tile: tile, priority });
+          blocksToBreak.push({ x: targetX, y: targetY, tile, priority: dy });
+        }
+      }
+    } else {
+      // Idle → break directly under the player (1 tile downward)
+      const targetX = playerTileX;
+      const targetY = playerTileY + 1;
+
+      if (
+        targetX >= 0 &&
+        targetX < WORLD_WIDTH &&
+        targetY >= 0 &&
+        targetY < WORLD_HEIGHT
+      ) {
+        const tile = world[targetX][targetY];
+        if (
+          tile &&
+          tile !== TILES.AIR &&
+          tile !== TILES.BEDROCK &&
+          tile !== TILES.LAVA &&
+          !isMaturePlantPart(targetX, targetY, game.state.plantStructures.get())
+        ) {
+          blocksToBreak.push({ x: targetX, y: targetY, tile, priority: 1 });
         }
       }
     }
   } else {
-    // Default circular breaking pattern when not moving
-    for (let dx = -breakRadius; dx <= breakRadius; dx++) {
-      for (let dy = -breakRadius; dy <= breakRadius; dy++) {
-        const targetX = playerTileX + dx;
-        const targetY = playerTileY + dy;
+    // Break in an area around the player - adjust pattern based on movement direction
+    const breakRadius = 1;
 
-        if (
-          targetX < 0 ||
-          targetX >= WORLD_WIDTH ||
-          targetY < 0 ||
-          targetY >= WORLD_HEIGHT
-        ) {
-          continue;
+    // If player is moving horizontally, break in a horizontal line
+    if (player.lastDirection !== 0) {
+      // Horizontal breaking pattern
+      for (let dx = -breakRadius; dx <= breakRadius; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const targetX = playerTileX + dx * (player.lastDirection > 0 ? 1 : 1);
+          const targetY = playerTileY + dy;
+
+          if (
+            targetX < 0 ||
+            targetX >= WORLD_WIDTH ||
+            targetY < 0 ||
+            targetY >= WORLD_HEIGHT
+          ) {
+            continue;
+          }
+
+          const tile = world[targetX][targetY];
+
+          // Can break most blocks except bedrock, air, and lava
+          // Also exclude mature plant parts (they should be harvested, not broken)
+          if (
+            tile &&
+            tile !== TILES.AIR &&
+            tile !== TILES.BEDROCK &&
+            tile !== TILES.LAVA &&
+            !isMaturePlantPart(
+              targetX,
+              targetY,
+              game.state.plantStructures.get(),
+            )
+          ) {
+            // Prioritize blocks in the direction player is facing
+            const priority =
+              Math.abs(dx) === 0 ? 1 : 2 - Math.abs(dx) / breakRadius;
+            blocksToBreak.push({
+              x: targetX,
+              y: targetY,
+              tile: tile,
+              priority,
+            });
+          }
         }
+      }
+    } else {
+      // Default circular breaking pattern when not moving
+      for (let dx = -breakRadius; dx <= breakRadius; dx++) {
+        for (let dy = -breakRadius; dy <= breakRadius; dy++) {
+          const targetX = playerTileX + dx;
+          const targetY = playerTileY + dy;
 
-        const tile = world[targetX][targetY];
+          if (
+            targetX < 0 ||
+            targetX >= WORLD_WIDTH ||
+            targetY < 0 ||
+            targetY >= WORLD_HEIGHT
+          ) {
+            continue;
+          }
 
-        // Can break most blocks except bedrock, air, and lava
-        // Also exclude mature plant parts (they should be harvested, not broken)
-        if (
-          tile &&
-          tile !== TILES.AIR &&
-          tile !== TILES.BEDROCK &&
-          tile !== TILES.LAVA &&
-          !isMaturePlantPart(targetX, targetY, game.state.plantStructures.get())
-        ) {
-          blocksToBreak.push({
-            x: targetX,
-            y: targetY,
-            tile: tile,
-            priority: 1,
-          });
+          const tile = world[targetX][targetY];
+
+          // Can break most blocks except bedrock, air, and lava
+          // Also exclude mature plant parts (they should be harvested, not broken)
+          if (
+            tile &&
+            tile !== TILES.AIR &&
+            tile !== TILES.BEDROCK &&
+            tile !== TILES.LAVA &&
+            !isMaturePlantPart(
+              targetX,
+              targetY,
+              game.state.plantStructures.get(),
+            )
+          ) {
+            blocksToBreak.push({
+              x: targetX,
+              y: targetY,
+              tile: tile,
+              priority: 1,
+            });
+          }
         }
       }
     }
-  }
-
-  // Sort by priority if moving horizontally
-  if (player.lastDirection !== 0) {
-    blocksToBreak.sort((a, b) => a.priority - b.priority);
   }
 
   if (blocksToBreak.length > 0) {
@@ -140,12 +189,14 @@ export function handleBreakBlock(currentState, game, doc) {
             }
           }
         }
+
         if (isImmaturePlantPart) break;
       }
 
       // If it's part of an immature plant, remove the entire plant
       if (isImmaturePlantPart && plantKey) {
         const structure = currentStructures[plantKey];
+
         if (structure.blocks) {
           structure.blocks.forEach((plantBlock) => {
             if (
@@ -164,7 +215,6 @@ export function handleBreakBlock(currentState, game, doc) {
           inventoryUpdates[structure.seedType] =
             (inventoryUpdates[structure.seedType] || 0) + 1;
         }
-
         delete updatedStructures[plantKey];
         delete updatedTimers[plantKey];
       } else {
@@ -184,6 +234,7 @@ export function handleBreakBlock(currentState, game, doc) {
           };
 
           const seedType = cropToSeed[block.tile.id];
+
           if (seedType) {
             inventoryUpdates[seedType] = (inventoryUpdates[seedType] || 0) + 1;
           }
@@ -191,7 +242,7 @@ export function handleBreakBlock(currentState, game, doc) {
       }
     });
 
-    // Update world, timers, and structures
+    // Apply updates back to state, world, timers, and structures
     game.state.world.set([...currentWorld]);
     game.state.growthTimers.set(updatedTimers);
     game.state.plantStructures.set(updatedStructures);

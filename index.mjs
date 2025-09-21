@@ -25,6 +25,8 @@ const configSignals = {
   GRAVITY: new Signal.State(0.7),
   FRICTION: new Signal.State(0.8),
   MAX_FALL_SPEED: new Signal.State(15),
+  // Break mode setting
+  breakMode: new Signal.State("regular"),
   // Tile types - keeping as static object since they don't change
   TILES: {
     AIR: { id: 0, color: "#87CEEB", solid: false, farmable: false },
@@ -325,6 +327,7 @@ globalThis.document.addEventListener("keydown", (e) => {
       getCurrentGameState(),
       globalThis.spriteGarden,
       globalThis.document,
+      configSignals.breakMode.get(),
     );
   }
 
@@ -363,6 +366,7 @@ function setupTouchControls() {
           getCurrentGameState(),
           globalThis.spriteGarden,
           globalThis.document,
+          configSignals.breakMode.get(),
         );
       }
     });
@@ -401,6 +405,7 @@ function setupTouchControls() {
           getCurrentGameState(),
           globalThis.spriteGarden,
           globalThis.document,
+          configSignals.breakMode.get(),
         );
       }
     });
@@ -1064,6 +1069,11 @@ function toggleView() {
   updateUI(getCurrentGameState());
 }
 
+function toggleBreakMode() {
+  const currentMode = configSignals.breakMode.get();
+  configSignals.breakMode.set(currentMode === "regular" ? "extra" : "regular");
+}
+
 globalThis.document.getElementById("stats").addEventListener("click", (e) => {
   e.stopPropagation();
 
@@ -1177,6 +1187,16 @@ effect(() => {
 });
 
 effect(() => {
+  // Auto-update break mode display
+  const breakMode = configSignals.breakMode.get();
+
+  const breakModeTextEl = globalThis.document.getElementById("breakModeText");
+  if (breakModeTextEl) {
+    breakModeTextEl.textContent = breakMode === "regular" ? "Regular" : "Extra";
+  }
+});
+
+effect(() => {
   // Auto-update total seeds display
   const totalSeeds = computedSignals.totalSeeds.get();
 
@@ -1226,6 +1246,9 @@ function initGame() {
 
   const toggleBtn = globalThis.document.getElementById("toggleView");
   if (toggleBtn) toggleBtn.addEventListener("click", toggleView);
+
+  const toggleBreakBtn = globalThis.document.getElementById("toggleBreakMode");
+  if (toggleBreakBtn) toggleBreakBtn.addEventListener("click", toggleBreakMode);
 
   setupTouchControls();
   setupTileInspection();
