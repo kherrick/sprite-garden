@@ -1,0 +1,82 @@
+{
+  "background_color": "#000000",
+  "description": "Sprite Garden - Grow sprites",
+  "display": "standalone",
+  "id": "sprite-garden",
+  "name": "Sprite Garden",
+  "short_name": "Sprite Garden",
+  "start_url": "https://kherrick.github.io/sprite-garden/",
+  "theme_color": "#000000",
+  "icons": [
+        {
+      "purpose": "any",
+      "sizes": "48x48",
+      "src": "https://kherrick.github.io/sprite-garden/assets/icons/48.png",
+      "type": "image/png"
+    },
+        {
+      "purpose": "any",
+      "sizes": "72x72",
+      "src": "https://kherrick.github.io/sprite-garden/assets/icons/72.png",
+      "type": "image/png"
+    },
+        {
+      "purpose": "any",
+      "sizes": "96x96",
+      "src": "https://kherrick.github.io/sprite-garden/assets/icons/96.png",
+      "type": "image/png"
+    },
+        {
+      "purpose": "any",
+      "sizes": "128x128",
+      "src": "https://kherrick.github.io/sprite-garden/assets/icons/128.png",
+      "type": "image/png"
+    },
+        {
+      "purpose": "any",
+      "sizes": "152x152",
+      "src": "https://kherrick.github.io/sprite-garden/assets/icons/152.png",
+      "type": "image/png"
+    },
+        {
+      "purpose": "any",
+      "sizes": "192x192",
+      "src": "https://kherrick.github.io/sprite-garden/assets/icons/192.png",
+      "type": "image/png"
+    },
+        {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "https://kherrick.github.io/sprite-garden/assets/icons/512.png",
+      "type": "image/png"
+    },
+        {
+      "purpose": "any",
+      "sizes": "1024x1024",
+      "src": "https://kherrick.github.io/sprite-garden/assets/icons/1024.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable",
+      "sizes": "1024x1024",
+      "src": "https://kherrick.github.io/sprite-garden/assets/icons/1024.png",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "form_factor": "wide",
+      "label": "sprite-garden",
+      "sizes": "1370x591",
+      "src": "https://kherrick.github.io/sprite-garden/assets/screenshots/sprite-garden-screenshot-1370x591.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
+      "label": "sprite-garden",
+      "sizes": "594x982",
+      "src": "https://kherrick.github.io/sprite-garden/assets/screenshots/sprite-garden-screenshot-594x982.png",
+      "type": "image/png"
+    }
+  ]
+}
