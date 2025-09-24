@@ -47,6 +47,10 @@ body {
   padding: 0.625rem;
 }
 
+.ui-grid__corner-heading {
+  margin-bottom: 0.3125rem;
+}
+
 /* Element modifiers for sticky corners */
 .ui-grid__corner--top-left {
   align-self: start;
@@ -76,6 +80,15 @@ body {
   justify-self: end;
 }
 
+#stats,
+#controls,
+#settings,
+#inventory,
+.seed-controls {
+  font-size: 0.5625rem;
+  padding: 0.25rem;
+}
+
 /* Stats Panel */
 #stats {
   backdrop-filter: blur(0.3125rem);
@@ -83,7 +96,6 @@ body {
   border-radius: 0.5rem;
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   color: white;
-  font-size: 0.6875rem;
   left: 0.625rem;
   padding: 0.5rem;
   top: 0.625rem;
@@ -113,7 +125,6 @@ body {
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   bottom: 1.625rem;
   color: white;
-  font-size: 0.625rem;
   padding: 0.5rem;
   right: 0.625rem;
   z-index: 100;
@@ -126,10 +137,10 @@ body {
   border-radius: 0.5rem;
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   color: white;
-  font-size: 0.625rem;
   padding: 0.5rem;
   z-index: 100;
   position: relative;
+  font-size: 0.5rem;
 }
 
 /* Mobile Touch Controls */
@@ -246,60 +257,6 @@ select:focus {
   border: 0.125rem solid #fff;
 }
 
-/* Mobile Responsive */
-@media (max-width: 48rem) {
-  #ui,
-  #controls,
-  #settings,
-  #inventory {
-    font-size: 0.625rem;
-    padding: 0.375rem;
-  }
-
-  #seeds {
-    margin-bottom: 0.3125rem;
-  }
-
-  #controls {
-    display: block;
-    font-size: 0.5rem;
-  }
-
-  .touch-btn {
-    font-size: 0.875rem;
-  }
-
-  .dpad {
-    grid-template-columns: 2.8125rem 2.8125rem 2.8125rem;
-    grid-template-rows: 2.8125rem 2.8125rem 2.8125rem;
-  }
-}
-
-@media (max-width: 30rem) {
-  #ui,
-  #inventory {
-    font-size: 0.5625rem;
-    padding: 0.25rem;
-  }
-
-  #settings {
-    font-size: 0.5625rem;
-    padding: 0.25rem;
-  }
-
-  .touch-btn {
-    font-size: 0.75rem;
-    height: 3rem;
-    width: 3rem;
-  }
-
-  .dpad {
-    gap: 0.1875rem;
-    grid-template-columns: 2.5rem 2.5rem 2.5rem;
-    grid-template-rows: 2.5rem 2.5rem 2.5rem;
-  }
-}
-
 /* Desktop Resolution Classes */
 .resolution-400 #canvas {
   border: 0.125rem solid #333;
@@ -320,4 +277,135 @@ select:focus {
   background: #2c3e50;
   display: flex;
   justify-content: center;
+}
+
+.seed-controls {
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 0.3125rem;
+  bottom: 0;
+  color: white;
+  margin: 0.625rem 0;
+  padding: 0.625rem;
+  position: absolute;
+  z-index: 999;
+}
+
+.seed-controls__actions {
+  display: flex;
+  gap: 0.625rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.seed-controls h4 {
+  margin: 0 0 0.625rem 0;
+  color: white;
+}
+
+.seed-controls input {
+  font-size: 0.75rem;
+  margin-left: 0.3125rem;
+  padding: 0.125rem 0.3125rem;
+  width: 5rem;
+}
+
+.seed-controls input:focus {
+  outline: 0.125rem solid #4a90e2;
+}
+
+#generateWithSeed {
+  background: #4a90e2;
+}
+
+#randomSeed {
+  background: #f39c12;
+}
+
+#copySeed {
+  background: #27ae60;
+}
+
+.seed-controls button {
+  border-radius: 0.1875rem;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.3125rem 0.625rem;
+}
+
+.seed-controls button:hover {
+  opacity: 0.8;
+  transform: translateY(-0.0625rem);
+}
+
+.seed-controls button:active {
+  transform: translateY(0);
+}
+
+.current-seed {
+  margin-top: 0.5rem;
+  color: #bbb;
+  font-size: 0.6875rem;
+}
+
+/* Mobile Responsive */
+@media (min-width: 30rem) {
+  #stats,
+  #controls,
+  #settings,
+  #inventory,
+  .seed-controls {
+    font-size: 0.725rem;
+    padding: 0.5rem;
+  }
+
+  .touch-btn {
+    font-size: 0.75rem;
+    height: 3rem;
+    width: 3rem;
+  }
+
+  .dpad {
+    gap: 0.1875rem;
+    grid-template-columns: 2.5rem 2.5rem 2.5rem;
+    grid-template-rows: 2.5rem 2.5rem 2.5rem;
+  }
+
+  .seed-controls {
+    font-size: 0.6875rem;
+  }
+
+  .seed-controls button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .seed-controls input {
+    width: 3.75rem;
+  }
+}
+
+@media (min-width: 48rem) {
+  #stats,
+  #controls,
+  #settings,
+  #inventory,
+  .seed-controls {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+
+  #seeds {
+    margin-bottom: 0.3125rem;
+  }
+
+  .touch-btn {
+    font-size: 0.875rem;
+  }
+
+  .dpad {
+    grid-template-columns: 2.8125rem 2.8125rem 2.8125rem;
+    grid-template-rows: 2.8125rem 2.8125rem 2.8125rem;
+  }
 }

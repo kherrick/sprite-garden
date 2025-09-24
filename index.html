@@ -31,7 +31,7 @@
 
         <div class="ui-grid__corner ui-grid__corner--top-right">
           <div id="settings">
-            <div style="margin-bottom: 5px">⚙️ Settings</div>
+            <div class="ui-grid__corner--heading">⚙️ Settings</div>
             <div>
               <select id="resolutionSelect">
                 <option value="400">400x400</option>
@@ -51,12 +51,13 @@
 
         <div class="ui-grid__corner ui-grid__corner--bottom-left">
           <div id="controls">
-            <div style="margin-bottom: 5px">⌨️ Controls</div>
+            <div class="ui-grid__corner--heading">⌨️ Controls</div>
             <div>A/D or ←/→: Move</div>
             <div>W/↑/Space: Jump</div>
             <div>E: Plant/Harvest</div>
             <div>Q: Break Block</div>
             <div>Mouse: Inspect Tiles</div>
+            <div>Ctrl+S: World Seed</div>
           </div>
         </div>
 
@@ -81,6 +82,31 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="seed-controls" hidden>
+        <h4>World Generation</h4>
+
+        <div class="seed-controls__actions">
+          <label>
+            Seed:
+            <input
+              id="worldSeedInput"
+              placeholder="Enter seed..."
+              type="number"
+            />
+          </label>
+
+          <button id="generateWithSeed">Generate</button>
+
+          <button id="randomSeed">Random</button>
+
+          <button id="copySeed">Copy Seed</button>
+        </div>
+
+        <div class="current-seed">
+          <p>Current seed: <span id="currentSeed"></span></p>
         </div>
       </div>
 

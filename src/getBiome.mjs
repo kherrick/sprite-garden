@@ -1,12 +1,31 @@
-import { noise } from "./noise.mjs";
+import { biomeNoise, initializeNoise } from "./noise.mjs";
 
-export function getBiome(x, BIOMES) {
-  const biomeNoise = noise(x, 0, 500);
+export function getBiome(x, BIOMES, seed) {
+  // Initialize noise with seed
+  initializeNoise(seed);
 
-  if (biomeNoise < -0.5) return BIOMES.DESERT;
-  if (biomeNoise < -0.2) return BIOMES.TUNDRA;
-  if (biomeNoise < 0.2) return BIOMES.FOREST;
-  if (biomeNoise < 0.5) return BIOMES.SWAMP;
+  const biomeNoiseValue = biomeNoise(x, parseInt(seed) + 500);
+  const temperatureNoise = biomeNoise(x, parseInt(seed) + 600);
+  const humidityNoise = biomeNoise(x, parseInt(seed) + 700);
 
-  return BIOMES.FOREST;
+  // Create more interesting biome distribution
+  // Temperature: -1 (cold) to 1 (hot)
+  const temperature = temperatureNoise;
+  // Humidity: -1 (dry) to 1 (wet)
+  const humidity = humidityNoise;
+
+  // Biome selection based on temperature and humidity
+  if (temperature < -0.4) {
+    // Cold regions
+    return BIOMES.TUNDRA;
+  } else if (temperature > 0.4 && humidity < -0.2) {
+    // Hot and dry
+    return BIOMES.DESERT;
+  } else if (humidity > 0.3) {
+    // Wet regions
+    return BIOMES.SWAMP;
+  } else {
+    // Temperate regions
+    return BIOMES.FOREST;
+  }
 }

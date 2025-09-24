@@ -1,4 +1,6 @@
 import { getBiome } from "./getBiome.mjs";
+import { getRandomSeed } from "./getRandomSeed.mjs";
+
 import { Signal } from "./signal.mjs";
 
 const getT = (v) => ({
@@ -14,6 +16,14 @@ const biomeFields = {
   subTile: null,
 };
 
+let INITIAL_WORLD_SEED;
+const params = new URLSearchParams(globalThis.location.search);
+if (params.has("seed")) {
+  INITIAL_WORLD_SEED = params.get("seed");
+} else {
+  INITIAL_WORLD_SEED = getRandomSeed();
+}
+
 // Create reactive signals for all configuration and state
 export const configSignals = {
   currentResolution: new Signal.State("400"),
@@ -22,6 +32,8 @@ export const configSignals = {
   WORLD_WIDTH: new Signal.State(400),
   WORLD_HEIGHT: new Signal.State(200),
   SURFACE_LEVEL: new Signal.State(60),
+  // World generation seed
+  worldSeed: new Signal.State(INITIAL_WORLD_SEED),
   // Physics constants
   GRAVITY: new Signal.State(0.7),
   FRICTION: new Signal.State(0.8),
@@ -165,7 +177,7 @@ export const computedSignals = {
 
     // getBiome might expect an x coordinate; keep call the same but guard result
     return (
-      getBiome(playerPos.x, biomes) || {
+      getBiome(playerPos.x, biomes, configSignals.worldSeed.get()) || {
         name: "Unknown",
         trees: false,
         crops: [],

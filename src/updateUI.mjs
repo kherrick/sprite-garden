@@ -1,14 +1,16 @@
 import { getBiome } from "./getBiome.mjs";
+import { getRandomSeed } from "./getRandomSeed.mjs";
 
 export function updateUI(doc, gameState) {
   const {
+    BIOMES,
     gameTime,
     player,
-    TILE_SIZE,
-    WORLD_WIDTH,
     SURFACE_LEVEL,
-    BIOMES,
+    TILE_SIZE,
     viewMode,
+    WORLD_WIDTH,
+    worldSeed,
   } = gameState;
 
   // @todo - compare with effects
@@ -21,7 +23,7 @@ export function updateUI(doc, gameState) {
   const playerTileY = Math.floor(player.y / TILE_SIZE);
 
   if (playerTileX >= 0 && playerTileX < WORLD_WIDTH) {
-    const biome = getBiome(playerTileX, BIOMES);
+    const biome = getBiome(playerTileX, BIOMES, worldSeed);
     const biomeEl = doc?.getElementById("currentBiome");
     if (biomeEl) {
       biomeEl.textContent = biome.name;
@@ -47,5 +49,22 @@ export function updateUI(doc, gameState) {
   const viewModeEl = doc?.getElementById("viewModeText");
   if (viewModeEl) {
     viewModeEl.textContent = viewMode === "normal" ? "X-Ray" : "Normal";
+  }
+
+  const seedInput = doc?.getElementById("worldSeedInput");
+  if (!seedInput.value) {
+    const currentSeedDisplay = doc?.getElementById("currentSeed");
+
+    if (worldSeed) {
+      seedInput.value = worldSeed;
+      currentSeedDisplay.textContent = worldSeed;
+
+      return;
+    }
+
+    const randomSeed = getRandomSeed();
+
+    seedInput.value = randomSeed;
+    currentSeedDisplay.textContent = randomSeed;
   }
 }

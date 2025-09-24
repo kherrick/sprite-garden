@@ -3,17 +3,20 @@ import { generateCaves } from "./generateCaves.mjs";
 import { generateHeightMap } from "./generateHeightMap.mjs";
 import { getBiome } from "./getBiome.mjs";
 import { getCurrentGameState } from "./getCurrentGameState.mjs";
-import { noise } from "./noise.mjs";
+import { generateWaterSources, simulateWaterPhysics } from "./waterPhysics.mjs";
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 import { updateUI } from "./updateUI.mjs";
 
 // Generate world
 export function generateWorld(doc) {
-  const WORLD_WIDTH = configSignals.WORLD_WIDTH.get();
-  const WORLD_HEIGHT = configSignals.WORLD_HEIGHT.get();
+  const BIOMES = configSignals.BIOMES;
   const SURFACE_LEVEL = configSignals.SURFACE_LEVEL.get();
   const TILES = configSignals.TILES;
-  const BIOMES = configSignals.BIOMES;
+  const WORLD_HEIGHT = configSignals.WORLD_HEIGHT.get();
+  const WORLD_WIDTH = configSignals.WORLD_WIDTH.get();
+  const worldSeed = configSignals.worldSeed.get();
+
+  console.log(`Generating world with seed: ${worldSeed}`);
 
   // Initialize world array
   const world = [];
@@ -25,10 +28,12 @@ export function generateWorld(doc) {
     }
   }
 
-  const heights = generateHeightMap(WORLD_WIDTH, SURFACE_LEVEL);
+  // Generate seeded height map
+  const heights = generateHeightMap(WORLD_WIDTH, SURFACE_LEVEL, worldSeed);
 
+  // Generate terrain based on height map and biomes
   for (let x = 0; x < WORLD_WIDTH; x++) {
-    const biome = getBiome(x, BIOMES) || BIOMES.FOREST;
+    const biome = getBiome(x, BIOMES, worldSeed) || BIOMES.FOREST;
     const surfaceHeight = heights[x];
 
     for (let y = 0; y < WORLD_HEIGHT; y++) {
@@ -65,6 +70,7 @@ export function generateWorld(doc) {
       }
     }
 
+    // Generate trees
     if (biome.trees && Math.random() < 0.1) {
       const treeHeight = 3 + Math.floor(Math.random() * 2);
 
@@ -96,6 +102,7 @@ export function generateWorld(doc) {
       }
     }
 
+    // Generate natural crops
     if (biome.crops.length > 0 && Math.random() < 0.05) {
       const crop = biome.crops[Math.floor(Math.random() * biome.crops.length)];
       const y = surfaceHeight - 1;
@@ -103,7 +110,7 @@ export function generateWorld(doc) {
       if (y >= 0 && world[x][y] === TILES.AIR) {
         world[x][y] = crop;
 
-        // Add to inventory when found — guard against undefined and missing keys
+        // Add to inventory when found
         const cropToSeed = {
           [TILES.WHEAT.id]: "WHEAT",
           [TILES.CARROT.id]: "CARROT",
@@ -123,35 +130,41 @@ export function generateWorld(doc) {
 
   // Set the world in state
   stateSignals.world.set(world);
+
+  // Generate caves with seeded randomization
   generateCaves();
 
-  // Handle water generation (create small shallow water pockets)
+  // Generate water sources using seeded noise
   const currentWorld = stateSignals.world.get();
+  generateWaterSources(
+    currentWorld,
+    heights,
+    WORLD_WIDTH,
+    WORLD_HEIGHT,
+    SURFACE_LEVEL,
+    TILES,
+    worldSeed,
+  );
 
-  for (let x = 0; x < WORLD_WIDTH; x++) {
-    const waterNoise = noise(x, 0, 1000);
+  // Simulate water physics to make water settle naturally
+  console.log("Simulating water physics...");
+  simulateWaterPhysics(currentWorld, WORLD_WIDTH, WORLD_HEIGHT, TILES, 30);
 
-    if (waterNoise > 0.6) {
-      // create a slightly larger water pool (1..3 tiles deep)
-      const waterDepth = 1 + Math.floor((waterNoise - 0.6) * 5); // 1..3-ish
-      const waterLevelTop = Math.min(WORLD_HEIGHT - 1, heights[x] + waterDepth);
-
-      // fill from surface+1 up to waterLevelTop (inclusive)
-      for (let y = heights[x] + 1; y <= waterLevelTop; y++) {
-        if (y >= 0 && y < WORLD_HEIGHT) {
-          currentWorld[x][y] = TILES.WATER;
-        }
-      }
-    }
-  }
+  // Update the world state with settled water
   stateSignals.world.set([...currentWorld]);
+
+  console.log("World generation complete!");
 
   updateInventoryDisplay(doc, stateSignals);
   updateUI(doc, getCurrentGameState(stateSignals, configSignals));
 }
 
 // Utility functions
-export function generateNewWorld(doc) {
+export function generateNewWorld(doc, newSeed = null) {
+  if (newSeed !== null) {
+    configSignals.worldSeed.set(newSeed.toString());
+  }
+
   generateWorld(doc);
 
   // Reset game state
@@ -175,7 +188,7 @@ export function generateNewWorld(doc) {
   const player = stateSignals.player.get();
   const world = stateSignals.world.get();
 
-  // use ints for spawn coords
+  // Find a good spawn location
   let spawnX = Math.floor(WORLD_WIDTH / 2);
   let spawnY = Math.floor(SURFACE_LEVEL - 5);
 
@@ -206,6 +219,7 @@ export function generateNewWorld(doc) {
     }
   }
 
+  // Fallback spawn location
   const updatedPlayer = {
     ...player,
     x: spawnX * TILE_SIZE,

@@ -1,6 +1,8 @@
 import { configSignals, stateSignals } from "./state.mjs";
+import { copyToClipboard } from "./copyToClipboard.mjs";
 import { generateNewWorld } from "./generateWorld.mjs";
 import { getCurrentGameState } from "./getCurrentGameState.mjs";
+import { getRandomSeed } from "./getRandomSeed.mjs";
 import { handleBreakBlock } from "./handleBreakBlock.mjs";
 import { handleFarmAction } from "./handleFarmAction.mjs";
 import { resizeCanvas } from "./resizeCanvas.mjs";
@@ -25,6 +27,42 @@ export function setupDocumentEventListeners(gThis) {
   // Keyboard events
   doc.addEventListener("keydown", (e) => {
     gThis.spriteGarden.keys[e.key.toLowerCase()] = true;
+
+    // Allow digits 0-9, enter, and delete
+    if (e.key.toLowerCase() === "enter") {
+      if (e.target.getAttribute("id") === "worldSeedInput") {
+        handleGenerateButton();
+      }
+    }
+    if (
+      (e.key.toLowerCase() >= "0" && e.key.toLowerCase() <= "9") ||
+      e.key.toLowerCase() === "backspace" ||
+      e.key.toLowerCase() === "delete"
+    ) {
+      return;
+    }
+
+    // Add 'R' key to regenerate world with random seed
+    if (e.key.toLowerCase() === "r" && e.ctrlKey) {
+      e.preventDefault();
+
+      handleRandomSeedButton();
+    }
+
+    // Add 'S' key to show / hide the world generation panel
+    if (e.key.toLowerCase() === "s" && e.ctrlKey) {
+      e.preventDefault();
+      document
+        .querySelector('[class="seed-controls"]')
+        .toggleAttribute("hidden");
+    }
+
+    // Add 'G' key to regenerate world with current seed (to see changes)
+    if (e.key.toLowerCase() === "g" && e.ctrlKey) {
+      e.preventDefault();
+
+      handleGenerateButton();
+    }
 
     // Handle farming actions
     if (e.key.toLowerCase() === "e") {
@@ -95,6 +133,43 @@ export function setupDocumentEventListeners(gThis) {
       e.preventDefault();
     }
   });
+
+  function handleGenerateButton() {
+    const seedInput = doc.getElementById("worldSeedInput");
+    const currentSeedDisplay = doc.getElementById("currentSeed");
+
+    generateNewWorld(doc, seedInput.value);
+
+    console.log(`Generated new world with seed: ${seedInput.value}`);
+
+    currentSeedDisplay.textContent = seedInput.value;
+  }
+
+  function handleRandomSeedButton() {
+    const currentSeedDisplay = doc.getElementById("currentSeed");
+    const seedInput = doc.getElementById("worldSeedInput");
+    const randomSeed = getRandomSeed();
+
+    generateNewWorld(doc, randomSeed);
+
+    console.log(`Generated new world with random seed: ${randomSeed}`);
+
+    seedInput.value = randomSeed;
+    currentSeedDisplay.textContent = randomSeed;
+  }
+
+  const generateBtn = doc.getElementById("generateWithSeed");
+  generateBtn.addEventListener("click", handleGenerateButton);
+
+  const randomBtn = doc.getElementById("randomSeed");
+  randomBtn.addEventListener("click", handleRandomSeedButton);
+
+  const copySeedBtn = doc.getElementById("copySeed");
+  copySeedBtn.addEventListener("click", async function () {
+    const seedInput = doc.getElementById("worldSeedInput");
+
+    await copyToClipboard(gThis, seedInput.value);
+  });
 }
 
 export function setupElementEventListeners(doc) {
@@ -138,7 +213,14 @@ export function setupElementEventListeners(doc) {
   }
 
   const genBtn = doc.getElementById("generateNewWorld");
-  if (genBtn) genBtn.addEventListener("click", () => generateNewWorld());
+  if (genBtn)
+    genBtn.addEventListener("click", () => {
+      const seedInput = doc.getElementById("worldSeedInput");
+      const currentSeedDisplay = doc.getElementById("currentSeed");
+      currentSeedDisplay.textContent = seedInput.value;
+
+      generateNewWorld(doc, seedInput.value);
+    });
 
   doc.querySelectorAll(".seed-btn").forEach((seedBtn) => {
     seedBtn.addEventListener("click", (e) => selectSeed(doc, stateSignals, e));
