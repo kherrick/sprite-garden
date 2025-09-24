@@ -1,0 +1,94 @@
+import { configSignals, stateSignals } from "./state.mjs";
+import { getCurrentGameState } from "./getCurrentGameState.mjs";
+import { handleBreakBlock } from "./handleBreakBlock.mjs";
+import { handleFarmAction } from "./handleFarmAction.mjs";
+
+// Touch controls
+export function setupTouchControls(gThis) {
+  const touchButtons = gThis.document.querySelectorAll(".touch-btn");
+
+  touchButtons.forEach((btn) => {
+    const key = btn.getAttribute("data-key");
+
+    // Touch start
+    btn.addEventListener("touchstart", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      gThis.spriteGarden.touchKeys[key] = true;
+      btn.style.background = "rgba(255, 255, 255, 0.3)";
+
+      // Handle special actions
+      if (key === "e") {
+        handleFarmAction(
+          getCurrentGameState(stateSignals, configSignals),
+          gThis.spriteGarden,
+          gThis.document,
+        );
+      } else if (key === "q") {
+        handleBreakBlock(
+          getCurrentGameState(stateSignals, configSignals),
+          gThis.spriteGarden,
+          gThis.document,
+          configSignals.breakMode.get(),
+        );
+      }
+    });
+
+    // Touch end
+    btn.addEventListener("touchend", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      gThis.spriteGarden.touchKeys[key] = false;
+      btn.style.background = "rgba(0, 0, 0, 0.6)";
+    });
+
+    // Touch cancel
+    btn.addEventListener("touchcancel", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      gThis.spriteGarden.touchKeys[key] = false;
+      btn.style.background = "rgba(0, 0, 0, 0.6)";
+    });
+
+    // Mouse events for desktop testing
+    btn.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      gThis.spriteGarden.touchKeys[key] = true;
+      btn.style.background = "rgba(255, 255, 255, 0.3)";
+
+      if (key === "e") {
+        handleFarmAction(
+          getCurrentGameState(stateSignals, configSignals),
+          gThis.spriteGarden,
+          gThis.document,
+        );
+      } else if (key === "q") {
+        handleBreakBlock(
+          getCurrentGameState(stateSignals, configSignals),
+          gThis.spriteGarden,
+          gThis.document,
+          configSignals.breakMode.get(),
+        );
+      }
+    });
+
+    btn.addEventListener("mouseup", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      gThis.spriteGarden.touchKeys[key] = false;
+      btn.style.background = "rgba(0, 0, 0, 0.6)";
+    });
+
+    btn.addEventListener("mouseleave", (e) => {
+      e.stopPropagation();
+
+      gThis.spriteGarden.touchKeys[key] = false;
+      btn.style.background = "rgba(0, 0, 0, 0.6)";
+    });
+  });
+}

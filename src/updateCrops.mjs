@@ -1,131 +1,3 @@
-export function updateCrops(currentState, game) {
-  const {
-    world,
-    TILES,
-    growthTimers,
-    plantStructures,
-    WORLD_WIDTH,
-    WORLD_HEIGHT,
-  } = currentState;
-  const currentTimers = game.state.growthTimers.get();
-  const currentWorld = game.state.world.get();
-  const currentStructures = game.state.plantStructures.get();
-
-  let timersChanged = false;
-  let worldChanged = false;
-  let structuresChanged = false;
-
-  const updatedTimers = { ...currentTimers };
-  const updatedStructures = { ...currentStructures };
-
-  // Update crop growth
-  for (const [key, timer] of Object.entries(updatedTimers)) {
-    timer.timeLeft -= 1 / 60; // Decrement by frame time
-
-    // Update plant structure growth if structure exists
-    if (updatedStructures[key]) {
-      const structure = updatedStructures[key];
-      const growthProgress = Math.max(
-        0,
-        Math.min(1, 1 - timer.timeLeft / TILES[timer.seedType].growthTime),
-      );
-
-      // Clear old plant blocks from the world
-      if (structure.blocks) {
-        structure.blocks.forEach((block) => {
-          if (
-            block.x >= 0 &&
-            block.x < WORLD_WIDTH &&
-            block.y >= 0 &&
-            block.y < WORLD_HEIGHT &&
-            currentWorld[block.x][block.y] !== TILES.AIR
-          ) {
-            currentWorld[block.x][block.y] = TILES.AIR;
-          }
-        });
-      }
-
-      // Generate new plant structure based on type and growth
-      const [x, y] = key.split(",").map(Number);
-      structure.blocks = generatePlantStructure(
-        x,
-        y,
-        timer.seedType,
-        growthProgress,
-        TILES,
-        WORLD_WIDTH,
-        WORLD_HEIGHT,
-      );
-
-      // Place the new plant blocks in the world
-      structure.blocks.forEach((block) => {
-        if (
-          block.x >= 0 &&
-          block.x < WORLD_WIDTH &&
-          block.y >= 0 &&
-          block.y < WORLD_HEIGHT
-        ) {
-          currentWorld[block.x][block.y] = block.tile;
-        }
-      });
-
-      worldChanged = true;
-      structuresChanged = true;
-    }
-
-    // Complete growth if timer has expired
-    if (timer.timeLeft <= 0) {
-      if (updatedStructures[key]) {
-        updatedStructures[key].mature = true;
-        updatedStructures[key].seedType = timer.seedType;
-      }
-
-      delete updatedTimers[key];
-      timersChanged = true;
-    }
-  }
-
-  // Update state if anything changed
-  if (timersChanged) {
-    game.state.growthTimers.set(updatedTimers);
-  }
-  if (structuresChanged) {
-    game.state.plantStructures.set(updatedStructures);
-  }
-  if (worldChanged) {
-    game.state.world.set([...currentWorld]);
-  }
-}
-
-function generatePlantStructure(
-  x,
-  y,
-  seedType,
-  progress,
-  TILES,
-  WORLD_WIDTH,
-  WORLD_HEIGHT,
-) {
-  const blocks = [];
-
-  // Ensure progress is between 0 and 1
-  progress = Math.max(0, Math.min(1, progress));
-
-  // Different growth patterns for each plant type
-  switch (seedType) {
-    case "WHEAT":
-      return generateWheatStructure(x, y, progress, TILES);
-    case "CARROT":
-      return generateCarrotStructure(x, y, progress, TILES);
-    case "MUSHROOM":
-      return generateMushroomStructure(x, y, progress, TILES);
-    case "CACTUS":
-      return generateCactusStructure(x, y, progress, TILES);
-    default:
-      return [{ x, y, tile: TILES.WHEAT_GROWING }]; // Fallback
-  }
-}
-
 function generateWheatStructure(x, y, progress, TILES) {
   const blocks = [];
 
@@ -284,4 +156,118 @@ function generateCactusStructure(x, y, progress, TILES) {
   }
 
   return blocks;
+}
+
+function generatePlantStructure(x, y, seedType, progress, TILES) {
+  // Ensure progress is between 0 and 1
+  progress = Math.max(0, Math.min(1, progress));
+
+  // Different growth patterns for each plant type
+  switch (seedType) {
+    case "WHEAT":
+      return generateWheatStructure(x, y, progress, TILES);
+    case "CARROT":
+      return generateCarrotStructure(x, y, progress, TILES);
+    case "MUSHROOM":
+      return generateMushroomStructure(x, y, progress, TILES);
+    case "CACTUS":
+      return generateCactusStructure(x, y, progress, TILES);
+    default:
+      return [{ x, y, tile: TILES.WHEAT_GROWING }]; // Fallback
+  }
+}
+
+export function updateCrops(currentState, game) {
+  const { TILES, WORLD_WIDTH, WORLD_HEIGHT } = currentState;
+
+  const currentTimers = game?.state.growthTimers.get();
+  const currentWorld = game?.state.world.get();
+  const currentStructures = game?.state.plantStructures.get();
+
+  let timersChanged = false;
+  let worldChanged = false;
+  let structuresChanged = false;
+
+  const updatedTimers = { ...currentTimers };
+  const updatedStructures = { ...currentStructures };
+
+  // Update crop growth
+  for (const [key, timer] of Object.entries(updatedTimers)) {
+    timer.timeLeft -= 1 / 60; // Decrement by frame time
+
+    // Update plant structure growth if structure exists
+    if (updatedStructures[key]) {
+      const structure = updatedStructures[key];
+      const growthProgress = Math.max(
+        0,
+        Math.min(1, 1 - timer.timeLeft / TILES[timer.seedType].growthTime),
+      );
+
+      // Clear old plant blocks from the world
+      if (structure.blocks) {
+        structure.blocks.forEach((block) => {
+          if (
+            block.x >= 0 &&
+            block.x < WORLD_WIDTH &&
+            block.y >= 0 &&
+            block.y < WORLD_HEIGHT &&
+            currentWorld[block.x][block.y] !== TILES.AIR
+          ) {
+            currentWorld[block.x][block.y] = TILES.AIR;
+          }
+        });
+      }
+
+      // Generate new plant structure based on type and growth
+      const [x, y] = key.split(",").map(Number);
+      structure.blocks = generatePlantStructure(
+        x,
+        y,
+        timer.seedType,
+        growthProgress,
+        TILES,
+        WORLD_WIDTH,
+        WORLD_HEIGHT,
+      );
+
+      // Place the new plant blocks in the world
+      structure.blocks.forEach((block) => {
+        if (
+          block.x >= 0 &&
+          block.x < WORLD_WIDTH &&
+          block.y >= 0 &&
+          block.y < WORLD_HEIGHT
+        ) {
+          currentWorld[block.x][block.y] = block.tile;
+        }
+      });
+
+      worldChanged = true;
+      structuresChanged = true;
+    }
+
+    // Complete growth if timer has expired
+    if (timer.timeLeft <= 0) {
+      if (updatedStructures[key]) {
+        updatedStructures[key].mature = true;
+        updatedStructures[key].seedType = timer.seedType;
+      }
+
+      delete updatedTimers[key];
+      timersChanged = true;
+    }
+  }
+
+  // Update state if anything changed
+  if (timersChanged) {
+    game.state.growthTimers.set(updatedTimers);
+  }
+
+  if (structuresChanged) {
+    game.state.plantStructures.set(updatedStructures);
+  }
+
+  if (worldChanged) {
+    game.state.world.set([...currentWorld]);
+  }
 }

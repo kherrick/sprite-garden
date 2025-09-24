@@ -1,11 +1,11 @@
 // Update inventory display
-export function updateInventoryDisplay(state, doc) {
+export function updateInventoryDisplay(doc, state) {
   const seedTypes = ["wheat", "carrot", "mushroom", "cactus"];
   const inventory = state.seedInventory?.get();
   const selectedSeed = state.selectedSeedType?.get();
 
   seedTypes.forEach((seedType) => {
-    const el = doc.getElementById(`${seedType}Count`);
+    const el = doc?.getElementById(`${seedType}Count`);
     try {
       if (el) {
         el.textContent = inventory[seedType.toUpperCase()];
@@ -13,16 +13,18 @@ export function updateInventoryDisplay(state, doc) {
     } catch (e) {}
   });
 
-  const selectedSeedEl = doc.getElementById("selectedSeed");
+  const selectedSeedEl = doc?.getElementById("selectedSeed");
   if (selectedSeedEl) {
     selectedSeedEl.textContent = selectedSeed || "None";
   }
 
   // Update button styles
-  const seedButtons = doc.querySelectorAll(".seed-btn");
-  seedButtons.forEach((btn) => {
-    btn.classList.remove("selected");
-  });
+  const seedButtons = doc?.querySelectorAll(".seed-btn");
+  if (seedButtons) {
+    seedButtons.forEach((btn) => {
+      btn.classList.remove("selected");
+    });
+  }
 
   if (selectedSeed) {
     const seedTypeMap = {
@@ -44,7 +46,7 @@ export function updateInventoryDisplay(state, doc) {
       0,
     );
 
-    const seedCountEl = doc.getElementById("seedCount");
+    const seedCountEl = doc?.getElementById("seedCount");
     if (seedCountEl) {
       seedCountEl.textContent = totalSeeds;
     }

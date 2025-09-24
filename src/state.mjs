@@ -1,0 +1,229 @@
+import { getBiome } from "./getBiome.mjs";
+import { Signal } from "./signal.mjs";
+
+const getT = (v) => ({
+  crop: false,
+  farmable: false,
+  solid: false,
+  ...v,
+});
+
+const biomeFields = {
+  crops: [],
+  surfaceTile: null,
+  subTile: null,
+};
+
+// Create reactive signals for all configuration and state
+export const configSignals = {
+  currentResolution: new Signal.State("400"),
+  canvasScale: new Signal.State(1),
+  TILE_SIZE: new Signal.State(8),
+  WORLD_WIDTH: new Signal.State(400),
+  WORLD_HEIGHT: new Signal.State(200),
+  SURFACE_LEVEL: new Signal.State(60),
+  // Physics constants
+  GRAVITY: new Signal.State(0.7),
+  FRICTION: new Signal.State(0.8),
+  MAX_FALL_SPEED: new Signal.State(15),
+  // Break mode setting
+  breakMode: new Signal.State("regular"),
+  // Tile types - keeping as static object since they don't change
+  TILES: {
+    AIR: getT({ id: 0, color: "#87CEEB" }),
+    WATER: getT({ id: 4, color: "#4169E1" }),
+    CLAY: getT({ id: 6, color: "#CD853F", solid: true, farmable: true }),
+    DIRT: getT({ id: 2, color: "#8B4513", solid: true, farmable: true }),
+    GRASS: getT({ id: 1, color: "#90EE90", solid: true, farmable: true }),
+    SAND: getT({ id: 5, color: "#F4A460", solid: true, farmable: true }),
+    COAL: getT({ id: 7, color: "#2F4F4F", solid: true }),
+    GOLD: getT({ id: 9, color: "#FFD700", solid: true }),
+    IRON: getT({ id: 8, color: "#B87333", solid: true }),
+    STONE: getT({ id: 3, color: "#696969", solid: true }),
+    TREE_LEAVES: getT({ id: 11, color: "#228B22", solid: true }),
+    TREE_TRUNK: getT({ id: 10, color: "#8B4513", solid: true }),
+    WHEAT: getT({ id: 12, color: "#DAA520", crop: true, growthTime: 240 }),
+    CARROT: getT({ id: 13, color: "#FF8C00", crop: true, growthTime: 120 }),
+    MUSHROOM: getT({ id: 14, color: "#8B0000", crop: true, growthTime: 60 }),
+    CACTUS: getT({
+      id: 15,
+      color: "#32CD32",
+      solid: true,
+      farmable: false,
+      crop: true,
+      growthTime: 960,
+    }),
+    SNOW: getT({ id: 16, color: "#FFFAFA", solid: true, farmable: true }),
+    ICE: getT({ id: 17, color: "#B0E0E6", solid: true }),
+    LAVA: getT({ id: 18, color: "#FF4500", solid: false }),
+    BEDROCK: getT({ id: 19, color: "#1C1C1C", solid: true }),
+    WHEAT_GROWING: getT({ id: 20, color: "#9ACD32", crop: true }),
+    CARROT_GROWING: getT({ id: 21, color: "#FF7F50", crop: true }),
+    MUSHROOM_GROWING: getT({ id: 22, color: "#CD5C5C", crop: true }),
+    CACTUS_GROWING: {
+      id: 23,
+      color: "#228B22",
+      solid: true,
+      farmable: false,
+      crop: true,
+    },
+    // Plant parts for grown crops
+    WHEAT_STALK: getT({ id: 24, color: "#8B7355" }),
+    WHEAT_GRAIN: getT({ id: 25, color: "#FFD700" }),
+    CARROT_LEAVES: getT({ id: 26, color: "#228B22" }),
+    CARROT_ROOT: getT({ id: 27, color: "#FF6347" }),
+    MUSHROOM_STEM: getT({ id: 28, color: "#D2691E" }),
+    MUSHROOM_CAP: getT({ id: 29, color: "#8B0000" }),
+    CACTUS_BODY: getT({ id: 30, color: "#2E8B57", solid: true }),
+    CACTUS_FLOWER: getT({ id: 31, color: "#FF69B4" }),
+  },
+
+  // Biome definitions - keeping as static since they don't change frequently
+  // Will be set after TILES is defined
+  BIOMES: {
+    FOREST: {
+      trees: true,
+      name: "Forest",
+      ...biomeFields,
+    },
+    DESERT: {
+      trees: false,
+      name: "Desert",
+      ...biomeFields,
+    },
+    TUNDRA: {
+      trees: false,
+      name: "Tundra",
+      ...biomeFields,
+    },
+    SWAMP: {
+      trees: true,
+      name: "Swamp",
+      ...biomeFields,
+    },
+  },
+};
+
+export const stateSignals = {
+  seedInventory: new Signal.State({
+    WHEAT: 5,
+    CARROT: 3,
+    MUSHROOM: 1,
+    CACTUS: 2,
+  }),
+  selectedSeedType: new Signal.State(null),
+  gameTime: new Signal.State(0),
+  growthTimers: new Signal.State({}),
+  plantStructures: new Signal.State({}), // Store plant growth data
+  seeds: new Signal.State(0),
+  viewMode: new Signal.State("normal"),
+  // Player character
+  player: new Signal.State({
+    x: 200,
+    y: 50,
+    width: 6,
+    height: 8,
+    velocityX: 0,
+    velocityY: 0,
+    speed: 3,
+    jumpPower: 12,
+    onGround: false,
+    color: "#FF69B4",
+    lastDirection: 0, // Track last movement direction
+  }),
+  // World data
+  world: new Signal.State([]),
+  // Camera system
+  camera: new Signal.State({
+    x: 0,
+    y: 0,
+    speed: 5,
+  }),
+};
+
+// Create computed signals for derived values
+export const computedSignals = {
+  totalSeeds: new Signal.Computed(() => {
+    const inventory = stateSignals.seedInventory.get();
+
+    return Object.values(inventory).reduce((sum, count) => sum + count, 0);
+  }),
+
+  playerTilePosition: new Signal.Computed(() => {
+    const player = stateSignals.player.get();
+    const tileSize = configSignals.TILE_SIZE.get();
+
+    return {
+      x: Math.floor((player.x + player.width / 2) / tileSize),
+      y: Math.floor(player.y / tileSize),
+    };
+  }),
+
+  currentBiome: new Signal.Computed(() => {
+    const playerPos = computedSignals.playerTilePosition.get();
+    const biomes = configSignals.BIOMES;
+
+    // getBiome might expect an x coordinate; keep call the same but guard result
+    return (
+      getBiome(playerPos.x, biomes) || {
+        name: "Unknown",
+        trees: false,
+        crops: [],
+      }
+    );
+  }),
+
+  currentDepth: new Signal.Computed(() => {
+    const playerPos = computedSignals.playerTilePosition.get();
+    const surfaceLevel = configSignals.SURFACE_LEVEL.get();
+
+    if (playerPos.y > surfaceLevel) {
+      const depthLevel = playerPos.y - surfaceLevel;
+
+      if (depthLevel < 15) return "Shallow";
+      else if (depthLevel < 30) return "Deep";
+      else return "Very Deep";
+    } else if (playerPos.y < surfaceLevel - 5) {
+      return "Sky";
+    }
+
+    return "Surface";
+  }),
+};
+
+export function initState(gThis) {
+  // Expose reactive state through globalThis
+  gThis.spriteGarden = {
+    config: configSignals,
+    state: stateSignals,
+    computed: computedSignals,
+    // Helper methods to get/set values
+    getConfig: (key) => configSignals[key]?.get(),
+    setState: (key, value) => stateSignals[key]?.set(value),
+    getState: (key) => stateSignals[key]?.get(),
+    updateState: (key, updater) => {
+      const current = stateSignals[key]?.get();
+      if (current !== undefined) {
+        stateSignals[key].set(updater(current));
+      }
+    },
+  };
+
+  // Initialize biomes after TILES is defined
+  const { TILES, BIOMES } = configSignals;
+  BIOMES.FOREST.surfaceTile = TILES.GRASS;
+  BIOMES.FOREST.subTile = TILES.DIRT;
+  BIOMES.FOREST.crops = [TILES.WHEAT, TILES.CARROT];
+
+  BIOMES.DESERT.surfaceTile = TILES.SAND;
+  BIOMES.DESERT.subTile = TILES.SAND;
+  BIOMES.DESERT.crops = [TILES.CACTUS];
+
+  BIOMES.TUNDRA.surfaceTile = TILES.SNOW;
+  BIOMES.TUNDRA.subTile = TILES.DIRT;
+  BIOMES.TUNDRA.crops = [];
+
+  BIOMES.SWAMP.surfaceTile = TILES.CLAY;
+  BIOMES.SWAMP.subTile = TILES.CLAY;
+  BIOMES.SWAMP.crops = [TILES.MUSHROOM];
+}

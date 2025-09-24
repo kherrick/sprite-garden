@@ -2,7 +2,7 @@ import { harvestCrop } from "./harvestCrop.mjs";
 import { plantSeed } from "./plantSeed.mjs";
 
 function harvestMaturePlant(currentState, structure, structureKey, game, doc) {
-  const { world, TILES, WORLD_WIDTH, WORLD_HEIGHT } = currentState;
+  const { TILES, WORLD_WIDTH, WORLD_HEIGHT } = currentState;
 
   // Clear all blocks in the plant structure
   const currentWorld = game.state.world.get();
@@ -53,7 +53,7 @@ function harvestMaturePlant(currentState, structure, structureKey, game, doc) {
 
   // Update inventory display
   import("./updateInventoryDisplay.mjs").then(({ updateInventoryDisplay }) => {
-    updateInventoryDisplay(game.state, doc);
+    updateInventoryDisplay(doc, game.state);
   });
 }
 

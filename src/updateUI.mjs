@@ -1,6 +1,6 @@
 import { getBiome } from "./getBiome.mjs";
 
-export function updateUI(gameState) {
+export function updateUI(doc, gameState) {
   const {
     gameTime,
     player,
@@ -11,10 +11,8 @@ export function updateUI(gameState) {
     viewMode,
   } = gameState;
 
-  // These are now handled by reactive effects in index.mjs
-  // But keeping the function for backward compatibility
-
-  const gameTimeEl = document.getElementById("gameTime");
+  // @todo - compare with effects
+  const gameTimeEl = doc?.getElementById("gameTime");
   if (gameTimeEl) {
     gameTimeEl.textContent = Math.floor(gameTime);
   }
@@ -24,7 +22,7 @@ export function updateUI(gameState) {
 
   if (playerTileX >= 0 && playerTileX < WORLD_WIDTH) {
     const biome = getBiome(playerTileX, BIOMES);
-    const biomeEl = document.getElementById("currentBiome");
+    const biomeEl = doc?.getElementById("currentBiome");
     if (biomeEl) {
       biomeEl.textContent = biome.name;
     }
@@ -40,13 +38,13 @@ export function updateUI(gameState) {
     depth = "Sky";
   }
 
-  const depthEl = document.getElementById("currentDepth");
+  const depthEl = doc?.getElementById("currentDepth");
   if (depthEl) {
     depthEl.textContent = depth;
   }
 
   // Update view mode button text
-  const viewModeEl = document.getElementById("viewModeText");
+  const viewModeEl = doc?.getElementById("viewModeText");
   if (viewModeEl) {
     viewModeEl.textContent = viewMode === "normal" ? "X-Ray" : "Normal";
   }

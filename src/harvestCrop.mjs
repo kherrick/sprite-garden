@@ -1,7 +1,7 @@
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 
 export function harvestCrop(currentState, x, y, cropTile, game, doc) {
-  const { state, world, TILES, growthTimers } = currentState;
+  const { TILES } = currentState;
 
   const harvestMap = {
     [TILES.WHEAT.id]: "WHEAT",
@@ -37,7 +37,7 @@ export function harvestCrop(currentState, x, y, cropTile, game, doc) {
     game.state.growthTimers.set(updatedTimers);
     game.state.plantStructures.set(updatedStructures);
 
-    updateInventoryDisplay(game.state, doc);
+    updateInventoryDisplay(doc, game.state);
 
     console.log(
       `Harvested simple ${seedType} crop, gained ${seedsGained} seeds`,

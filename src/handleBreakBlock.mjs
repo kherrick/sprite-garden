@@ -9,6 +9,7 @@ function isMaturePlantPart(x, y, plantStructures) {
       }
     }
   }
+
   return false;
 }
 
@@ -251,13 +252,15 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
     if (Object.keys(inventoryUpdates).length > 0) {
       game.updateState("seedInventory", (inv) => {
         const updated = { ...inv };
+
         Object.entries(inventoryUpdates).forEach(([seedType, amount]) => {
           updated[seedType] += amount;
         });
+
         return updated;
       });
     }
 
-    updateInventoryDisplay(game.state, doc);
+    updateInventoryDisplay(doc, game.state);
   }
 }

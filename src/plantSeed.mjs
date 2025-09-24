@@ -1,7 +1,7 @@
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 
 export function plantSeed(currentState, x, y, seedType, game, doc) {
-  const { state, world, TILES, growthTimers } = currentState;
+  const { state, world, TILES } = currentState;
 
   // Check if there's farmable ground below
   const belowTile = world[x][y + 1];
@@ -55,7 +55,7 @@ export function plantSeed(currentState, x, y, seedType, game, doc) {
       },
     });
 
-    updateInventoryDisplay(game.state, doc);
+    updateInventoryDisplay(doc, game.state);
 
     console.log(
       `Planted ${seedType} at (${x}, ${y}), ${

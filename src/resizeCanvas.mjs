@@ -1,9 +1,8 @@
 // Resize canvas based on resolution setting
-export function resizeCanvas(config, doc) {
-  const canvas = doc?.getElementById("canvas");
-
-  if (canvas) {
-    const currentResolution = config.currentResolution.get();
+export function resizeCanvas(doc, configSignals) {
+  const cnvs = doc?.getElementById("canvas");
+  if (cnvs) {
+    const currentResolution = configSignals.currentResolution.get();
 
     if (currentResolution === "fullscreen") {
       // Fullscreen mode
@@ -13,12 +12,12 @@ export function resizeCanvas(config, doc) {
         "resolution-800",
       );
 
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      canvas.style.width = "100vw";
-      canvas.style.height = "100vh";
+      cnvs.width = window.innerWidth;
+      cnvs.height = window.innerHeight;
+      cnvs.style.width = "100vw";
+      cnvs.style.height = "100vh";
 
-      config.canvasScale.set(1);
+      configSignals.canvasScale.set(1);
 
       return;
     }
@@ -28,14 +27,14 @@ export function resizeCanvas(config, doc) {
     doc.body.classList.remove("resolution-400", "resolution-800");
 
     const size = parseInt(currentResolution);
-    canvas.width = size;
-    canvas.height = size;
-    canvas.style.width = size + "px";
-    canvas.style.height = size + "px";
+    cnvs.width = size;
+    cnvs.height = size;
+    cnvs.style.width = size + "px";
+    cnvs.style.height = size + "px";
 
     doc.body.classList.add(`resolution-${size}`);
 
     // Updated scale calculation
-    config.canvasScale.set(size / 400);
+    configSignals.canvasScale.set(size / 400);
   }
 }
