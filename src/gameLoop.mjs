@@ -2,6 +2,7 @@ import { configSignals, stateSignals } from "./state.mjs";
 import { getCurrentGameState } from "./getCurrentGameState.mjs";
 import { render } from "./render.mjs";
 import { updateCrops } from "./updateCrops.mjs";
+import { updateMapFog } from "./mapFog.mjs";
 import { updatePlayer } from "./updatePlayer.mjs";
 import { updateUI } from "./updateUI.mjs";
 
@@ -14,9 +15,14 @@ export function gameLoop(gThis) {
     gThis.spriteGarden,
   );
 
-  const canvas = gThis.document?.getElementById("canvas");
+  // update map fog based on player position
+  const isFogEnabled = configSignals.fogMode.get() === "fog";
+  if (isFogEnabled) {
+    updateMapFog();
+  }
 
-  render(canvas);
+  const canvas = gThis.document?.getElementById("canvas");
+  render(canvas, isFogEnabled);
 
   updateUI(gThis.document, getCurrentGameState(stateSignals, configSignals));
 

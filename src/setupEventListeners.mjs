@@ -134,6 +134,19 @@ export function setupDocumentEventListeners(gThis) {
     }
   });
 
+  const fogButton = doc.getElementById("toggleFog");
+  fogButton.addEventListener("click", function toggleFog() {
+    const fogModeText = doc.getElementById("fogModeText");
+
+    if (fogModeText.textContent === "Clear") {
+      configSignals.fogMode.set("fog");
+
+      return;
+    }
+
+    configSignals.fogMode.set("clear");
+  });
+
   function handleGenerateButton() {
     const seedInput = doc.getElementById("worldSeedInput");
     const currentSeedDisplay = doc.getElementById("currentSeed");

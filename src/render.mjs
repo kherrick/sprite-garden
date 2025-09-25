@@ -1,8 +1,9 @@
 import { configSignals, stateSignals } from "./state.mjs";
 import { renderPlayer } from "./renderPlayer.mjs";
+import { renderMapFog } from "./mapFog.mjs";
 
 // Render world
-export function render(canvas) {
+export function render(canvas, isFogEnabled) {
   const TILE_SIZE = configSignals.TILE_SIZE.get();
   const WORLD_WIDTH = configSignals.WORLD_WIDTH.get();
   const WORLD_HEIGHT = configSignals.WORLD_HEIGHT.get();
@@ -56,8 +57,8 @@ export function render(canvas) {
 
         ctx.fillStyle = color;
         ctx.fillRect(
-          x * TILE_SIZE - (camera.x % TILE_SIZE),
-          y * TILE_SIZE - (camera.y % TILE_SIZE),
+          Math.round(x * TILE_SIZE - (camera.x % TILE_SIZE)),
+          Math.round(y * TILE_SIZE - (camera.y % TILE_SIZE)),
           TILE_SIZE,
           TILE_SIZE,
         );
@@ -66,4 +67,9 @@ export function render(canvas) {
   }
 
   renderPlayer(ctx);
+
+  // Render map fog overlay if enabled
+  if (isFogEnabled && ctx && canvas) {
+    renderMapFog(ctx, canvas);
+  }
 }

@@ -34,6 +34,16 @@ export function setupEffects(doc) {
   });
 
   effect(() => {
+    // Auto-update fogMode mode display
+    const fogMode = configSignals.fogMode.get();
+
+    const fogModeTextEl = doc.getElementById("fogModeText");
+    if (fogModeTextEl) {
+      fogModeTextEl.textContent = fogMode === "fog" ? "Fog" : "Clear";
+    }
+  });
+
+  effect(() => {
     // Auto-update break mode display
     const breakMode = configSignals.breakMode.get();
 

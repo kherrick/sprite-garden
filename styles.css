@@ -28,8 +28,8 @@ body {
   background: #87ceeb;
   display: block;
   image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
   image-rendering: crisp-edges;
-  image-rendering: pixelated;
   position: absolute;
 }
 

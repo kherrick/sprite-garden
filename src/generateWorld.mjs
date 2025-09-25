@@ -1,9 +1,10 @@
 import { configSignals, stateSignals } from "./state.mjs";
 import { generateCaves } from "./generateCaves.mjs";
 import { generateHeightMap } from "./generateHeightMap.mjs";
+import { generateWaterSources, simulateWaterPhysics } from "./waterPhysics.mjs";
 import { getBiome } from "./getBiome.mjs";
 import { getCurrentGameState } from "./getCurrentGameState.mjs";
-import { generateWaterSources, simulateWaterPhysics } from "./waterPhysics.mjs";
+import { resetMapFog } from "./mapFog.mjs";
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 import { updateUI } from "./updateUI.mjs";
 
@@ -171,6 +172,9 @@ export function generateNewWorld(doc, newSeed = null) {
   stateSignals.growthTimers.set({});
   stateSignals.plantStructures.set({});
   stateSignals.gameTime.set(0);
+
+  // Reset map fog for new world
+  resetMapFog();
 
   // Give player starting seeds
   stateSignals.seedInventory.set({

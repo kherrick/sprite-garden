@@ -26,18 +26,19 @@ if (params.has("seed")) {
 
 // Create reactive signals for all configuration and state
 export const configSignals = {
+  worldSeed: new Signal.State(INITIAL_WORLD_SEED),
   currentResolution: new Signal.State("400"),
   canvasScale: new Signal.State(1),
   TILE_SIZE: new Signal.State(8),
   WORLD_WIDTH: new Signal.State(400),
   WORLD_HEIGHT: new Signal.State(200),
   SURFACE_LEVEL: new Signal.State(60),
-  // World generation seed
-  worldSeed: new Signal.State(INITIAL_WORLD_SEED),
   // Physics constants
   GRAVITY: new Signal.State(0.7),
   FRICTION: new Signal.State(0.8),
   MAX_FALL_SPEED: new Signal.State(15),
+  // Fog mode setting - "fog" || "clear"
+  fogMode: new Signal.State("fog"),
   // Break mode setting
   breakMode: new Signal.State("regular"),
   // Tile types - keeping as static object since they don't change
@@ -117,6 +118,8 @@ export const configSignals = {
 };
 
 export const stateSignals = {
+  // Tracks which tiles have been explored for map fog
+  exploredMap: new Signal.State({}),
   seedInventory: new Signal.State({
     WHEAT: 5,
     CARROT: 3,
@@ -126,7 +129,8 @@ export const stateSignals = {
   selectedSeedType: new Signal.State(null),
   gameTime: new Signal.State(0),
   growthTimers: new Signal.State({}),
-  plantStructures: new Signal.State({}), // Store plant growth data
+  // Store plant growth data
+  plantStructures: new Signal.State({}),
   seeds: new Signal.State(0),
   viewMode: new Signal.State("normal"),
   // Player character
@@ -141,7 +145,8 @@ export const stateSignals = {
     jumpPower: 12,
     onGround: false,
     color: "#FF69B4",
-    lastDirection: 0, // Track last movement direction
+    // Track last movement direction
+    lastDirection: 0,
   }),
   // World data
   world: new Signal.State([]),
