@@ -5,9 +5,11 @@ import { getCurrentGameState } from "./getCurrentGameState.mjs";
 import { getRandomSeed } from "./getRandomSeed.mjs";
 import { handleBreakBlock } from "./handleBreakBlock.mjs";
 import { handleFarmAction } from "./handleFarmAction.mjs";
+import { handlePlaceBlock } from "./handlePlaceBlock.mjs";
 import { resizeCanvas } from "./resizeCanvas.mjs";
 import { runCompress } from "./compression.mjs";
 import { selectSeed } from "./selectSeed.mjs";
+import { selectMaterial } from "./selectMaterial.mjs";
 import { toggleBreakMode } from "./toggleBreakMode.mjs";
 import { toggleView } from "./toggleView.mjs";
 
@@ -78,6 +80,16 @@ export function setupDocumentEventListeners(gThis) {
         gThis.spriteGarden,
         doc,
         configSignals.breakMode.get(),
+      );
+    }
+
+    // Handle block placement - I, O, K, L keys
+    if (["i", "o", "k", "l", ",", "."].includes(e.key.toLowerCase())) {
+      handlePlaceBlock(
+        getCurrentGameState(stateSignals, configSignals),
+        gThis.spriteGarden,
+        doc,
+        e.key.toLowerCase(),
       );
     }
 
@@ -317,8 +329,16 @@ export function setupElementEventListeners(doc) {
       generateNewWorld(doc, seedInput.value);
     });
 
+  // Seed button event listeners
   doc.querySelectorAll(".seed-btn").forEach((seedBtn) => {
     seedBtn.addEventListener("click", (e) => selectSeed(doc, stateSignals, e));
+  });
+
+  // Material button event listeners
+  doc.querySelectorAll(".material-btn").forEach((materialBtn) => {
+    materialBtn.addEventListener("click", (e) =>
+      selectMaterial(doc, stateSignals, e),
+    );
   });
 
   const toggleBtn = doc.getElementById("toggleView");

@@ -11,6 +11,12 @@ export function setupEffects(doc) {
   });
 
   effect(() => {
+    // Auto-update inventory display when materials inventory changes
+    const materialsInventory = stateSignals.materialsInventory.get();
+    updateInventoryDisplay(doc, stateSignals);
+  });
+
+  effect(() => {
     // Auto-update UI when computed values change
     const biome = computedSignals.currentBiome.get() || { name: "Unknown" };
     const depth = computedSignals.currentDepth.get();
@@ -71,6 +77,16 @@ export function setupEffects(doc) {
     const selectedSeedEl = doc.getElementById("selectedSeed");
     if (selectedSeedEl) {
       selectedSeedEl.textContent = selectedSeed || "None";
+    }
+  });
+
+  effect(() => {
+    // Auto-update selected material display
+    const selectedMaterial = stateSignals.selectedMaterialType.get();
+
+    const selectedMaterialEl = doc.getElementById("selectedMaterial");
+    if (selectedMaterialEl) {
+      selectedMaterialEl.textContent = selectedMaterial || "None";
     }
   });
 }

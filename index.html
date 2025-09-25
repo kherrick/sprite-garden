@@ -57,6 +57,7 @@
             <div>W/↑/Space: Jump</div>
             <div>E: Plant/Harvest</div>
             <div>Q: Break Block</div>
+            <div>I/O/K/L: Place Block</div>
             <div>Mouse: Inspect Tiles</div>
             <div>Ctrl+S: World State</div>
           </div>
@@ -81,6 +82,50 @@
               <button class="seed-btn" data-cactus>
                 🌵 <span id="cactusCount">0</span>
               </button>
+            </div>
+
+            <div
+              id="materials"
+              style="
+                margin-top: 10px;
+                border-top: 1px solid #ccc;
+                padding-top: 10px;
+              "
+            >
+              <div>🧱 Materials</div>
+              <div>Selected: <span id="selectedMaterial">None</span></div>
+              <div>
+                <button class="material-btn" data-dirt>
+                  🟤 <span id="dirtCount">0</span>
+                </button>
+                <button class="material-btn" data-stone>
+                  🪨 <span id="stoneCount">0</span>
+                </button>
+              </div>
+              <div>
+                <button class="material-btn" data-wood>
+                  🪵 <span id="woodCount">0</span>
+                </button>
+                <button class="material-btn" data-sand>
+                  🏖️ <span id="sandCount">0</span>
+                </button>
+              </div>
+              <div>
+                <button class="material-btn" data-clay>
+                  🧱 <span id="clayCount">0</span>
+                </button>
+                <button class="material-btn" data-coal>
+                  ⚫ <span id="coalCount">0</span>
+                </button>
+              </div>
+              <div>
+                <button class="material-btn" data-iron>
+                  🔩 <span id="ironCount">0</span>
+                </button>
+                <button class="material-btn" data-gold>
+                  🟡 <span id="goldCount">0</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

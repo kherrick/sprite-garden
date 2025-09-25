@@ -129,7 +129,19 @@ export const stateSignals = {
     MUSHROOM: 1,
     CACTUS: 2,
   }),
+  // New materials inventory
+  materialsInventory: new Signal.State({
+    DIRT: 0,
+    STONE: 0,
+    WOOD: 0, // Represents TREE_TRUNK
+    SAND: 0,
+    CLAY: 0,
+    COAL: 0,
+    IRON: 0,
+    GOLD: 0,
+  }),
   selectedSeedType: new Signal.State(null),
+  selectedMaterialType: new Signal.State(null),
   gameTime: new Signal.State(0),
   growthTimers: new Signal.State({}),
   // Store plant growth data
@@ -165,6 +177,12 @@ export const stateSignals = {
 export const computedSignals = {
   totalSeeds: new Signal.Computed(() => {
     const inventory = stateSignals.seedInventory.get();
+
+    return Object.values(inventory).reduce((sum, count) => sum + count, 0);
+  }),
+
+  totalMaterials: new Signal.Computed(() => {
+    const inventory = stateSignals.materialsInventory.get();
 
     return Object.values(inventory).reduce((sum, count) => sum + count, 0);
   }),

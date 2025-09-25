@@ -13,6 +13,25 @@ function isMaturePlantPart(x, y, plantStructures) {
   return false;
 }
 
+// Helper function to get material type from tile
+function getMaterialFromTile(tile, TILES) {
+  const tileToMaterial = {
+    [TILES.DIRT.id]: "DIRT",
+    [TILES.GRASS.id]: "DIRT", // Grass drops dirt
+    [TILES.STONE.id]: "STONE",
+    [TILES.TREE_TRUNK.id]: "WOOD",
+    [TILES.TREE_LEAVES.id]: "WOOD", // Leaves can drop wood occasionally
+    [TILES.SAND.id]: "SAND",
+    [TILES.CLAY.id]: "CLAY",
+    [TILES.COAL.id]: "COAL",
+    [TILES.IRON.id]: "IRON",
+    [TILES.GOLD.id]: "GOLD",
+    [TILES.SNOW.id]: "SAND", // Snow melts to... sand for simplicity
+  };
+
+  return tileToMaterial[tile.id] || null;
+}
+
 export function handleBreakBlock(currentState, game, doc, mode = "regular") {
   const { player, world, TILES, TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT } =
     currentState;
@@ -30,7 +49,7 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
       for (let dy = 0; dy < 3; dy++) {
         const targetX = playerTileX + dx; // one tile forward
-        const targetY = playerTileY - dy; // player’s tile (dy=0), +1 above, +2 above
+        const targetY = playerTileY - dy; // player's tile (dy=0), +1 above, +2 above
 
         if (
           targetX < 0 ||
@@ -46,6 +65,7 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
           tile !== TILES.AIR &&
           tile !== TILES.BEDROCK &&
           tile !== TILES.LAVA &&
+          tile !== TILES.WATER && // Don't break water
           !isMaturePlantPart(targetX, targetY, game.state.plantStructures.get())
         ) {
           blocksToBreak.push({ x: targetX, y: targetY, tile, priority: dy });
@@ -68,6 +88,7 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
           tile !== TILES.AIR &&
           tile !== TILES.BEDROCK &&
           tile !== TILES.LAVA &&
+          tile !== TILES.WATER &&
           !isMaturePlantPart(targetX, targetY, game.state.plantStructures.get())
         ) {
           blocksToBreak.push({ x: targetX, y: targetY, tile, priority: 1 });
@@ -97,13 +118,14 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
           const tile = world[targetX][targetY];
 
-          // Can break most blocks except bedrock, air, and lava
+          // Can break most blocks except bedrock, air, lava, and water
           // Also exclude mature plant parts (they should be harvested, not broken)
           if (
             tile &&
             tile !== TILES.AIR &&
             tile !== TILES.BEDROCK &&
             tile !== TILES.LAVA &&
+            tile !== TILES.WATER &&
             !isMaturePlantPart(
               targetX,
               targetY,
@@ -140,13 +162,14 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
           const tile = world[targetX][targetY];
 
-          // Can break most blocks except bedrock, air, and lava
+          // Can break most blocks except bedrock, air, lava, and water
           // Also exclude mature plant parts (they should be harvested, not broken)
           if (
             tile &&
             tile !== TILES.AIR &&
             tile !== TILES.BEDROCK &&
             tile !== TILES.LAVA &&
+            tile !== TILES.WATER &&
             !isMaturePlantPart(
               targetX,
               targetY,
@@ -172,7 +195,8 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
     const currentStructures = game.state.plantStructures.get();
     const updatedTimers = { ...currentTimers };
     const updatedStructures = { ...currentStructures };
-    let inventoryUpdates = {};
+    let seedUpdates = {};
+    let materialUpdates = {};
 
     blocksToBreak.forEach((block) => {
       // Check if this is part of an immature plant structure (these can be broken)
@@ -213,8 +237,8 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
 
         // Give small chance to get a seed back when breaking immature plants
         if (structure.seedType && Math.random() < 0.5) {
-          inventoryUpdates[structure.seedType] =
-            (inventoryUpdates[structure.seedType] || 0) + 1;
+          seedUpdates[structure.seedType] =
+            (seedUpdates[structure.seedType] || 0) + 1;
         }
         delete updatedStructures[plantKey];
         delete updatedTimers[plantKey];
@@ -237,7 +261,20 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
           const seedType = cropToSeed[block.tile.id];
 
           if (seedType) {
-            inventoryUpdates[seedType] = (inventoryUpdates[seedType] || 0) + 1;
+            seedUpdates[seedType] = (seedUpdates[seedType] || 0) + 1;
+          }
+        }
+
+        // Collect materials from broken blocks
+        const materialType = getMaterialFromTile(block.tile, TILES);
+        if (materialType) {
+          // Special handling for leaves - only sometimes drop wood
+          if (block.tile === TILES.TREE_LEAVES && Math.random() < 0.3) {
+            materialUpdates[materialType] =
+              (materialUpdates[materialType] || 0) + 1;
+          } else if (block.tile !== TILES.TREE_LEAVES) {
+            materialUpdates[materialType] =
+              (materialUpdates[materialType] || 0) + 1;
           }
         }
       }
@@ -248,13 +285,26 @@ export function handleBreakBlock(currentState, game, doc, mode = "regular") {
     game.state.growthTimers.set(updatedTimers);
     game.state.plantStructures.set(updatedStructures);
 
-    // Update inventory if we gained any seeds
-    if (Object.keys(inventoryUpdates).length > 0) {
+    // Update seed inventory if we gained any seeds
+    if (Object.keys(seedUpdates).length > 0) {
       game.updateState("seedInventory", (inv) => {
         const updated = { ...inv };
 
-        Object.entries(inventoryUpdates).forEach(([seedType, amount]) => {
+        Object.entries(seedUpdates).forEach(([seedType, amount]) => {
           updated[seedType] += amount;
+        });
+
+        return updated;
+      });
+    }
+
+    // Update materials inventory if we gained any materials
+    if (Object.keys(materialUpdates).length > 0) {
+      game.updateState("materialsInventory", (inv) => {
+        const updated = { ...inv };
+
+        Object.entries(materialUpdates).forEach(([materialType, amount]) => {
+          updated[materialType] = (updated[materialType] || 0) + amount;
         });
 
         return updated;
