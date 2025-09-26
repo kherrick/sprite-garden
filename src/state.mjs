@@ -1,5 +1,7 @@
+import { createSaveState } from "./createSaveState.mjs";
 import { getBiome } from "./getBiome.mjs";
 import { getRandomSeed } from "./getRandomSeed.mjs";
+import { loadSaveState } from "./loadSaveState.mjs";
 
 import { Signal } from "./signal.mjs";
 
@@ -26,6 +28,7 @@ if (params.has("seed")) {
 
 // Create reactive signals for all configuration and state
 export const configSignals = {
+  version: new Signal.State(""),
   worldSeed: new Signal.State(INITIAL_WORLD_SEED),
   currentResolution: new Signal.State("400"),
   canvasScale: new Signal.State(1),
@@ -208,14 +211,24 @@ export const computedSignals = {
   }),
 };
 
-export function initState(gThis) {
+export function initState(gThis, version) {
+  configSignals.version.set(version);
+
   // Expose reactive state through globalThis
   gThis.spriteGarden = {
+    ...gThis?.spriteGarden,
     config: configSignals,
     state: stateSignals,
     computed: computedSignals,
     // Helper methods to get/set values
+    setConfig: (key, value) => configSignals[key]?.set(value),
     getConfig: (key) => configSignals[key]?.get(),
+    updateConfig: (key, updater) => {
+      const current = configSignals[key]?.get();
+      if (current !== undefined) {
+        configSignals[key].set(updater(current));
+      }
+    },
     setState: (key, value) => stateSignals[key]?.set(value),
     getState: (key) => stateSignals[key]?.get(),
     updateState: (key, updater) => {
@@ -224,6 +237,8 @@ export function initState(gThis) {
         stateSignals[key].set(updater(current));
       }
     },
+    loadSaveState,
+    createSaveState,
   };
 
   // Initialize biomes after TILES is defined

@@ -58,7 +58,7 @@
             <div>E: Plant/Harvest</div>
             <div>Q: Break Block</div>
             <div>Mouse: Inspect Tiles</div>
-            <div>Ctrl+S: World Seed</div>
+            <div>Ctrl+S: World State</div>
           </div>
         </div>
 
@@ -100,14 +100,19 @@
           </label>
 
           <button id="generateWithSeed">Generate</button>
-
           <button id="randomSeed">Random</button>
-
           <button id="copySeed">Copy Seed</button>
         </div>
 
         <div class="current-seed">
           <p>Current seed: <span id="currentSeed"></span></p>
+        </div>
+
+        <h4>Load / Save Game</h4>
+
+        <div class="seed-controls__save-load">
+          <button id="loadCompressedState">Load Game</button>
+          <button id="saveCompressedState">Save Game</button>
         </div>
       </div>
 

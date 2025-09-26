@@ -14,8 +14,16 @@ import { setupTileInspection } from "./setupTileInspection.mjs";
 import { setupTouchControls } from "./setupTouchControls.mjs";
 
 // Initialize game
-export function initGame(doc, cnvs) {
-  initState(globalThis);
+export async function initGame(doc, cnvs) {
+  let version = "1";
+
+  try {
+    version = (await (await fetch("package.json")).json()).version;
+  } catch (error) {
+    console.log(`continuing with static version: ${version}`);
+  }
+
+  initState(globalThis, version);
 
   setupGlobalEventListeners(globalThis);
   setupDocumentEventListeners(globalThis);

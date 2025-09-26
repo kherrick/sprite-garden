@@ -28,6 +28,6 @@ export function gameLoop(gThis) {
 
   // Increment game time every frame (we store seconds as fractional)
   stateSignals.gameTime.set(stateSignals.gameTime.get() + 1 / 60);
-
+  // console.log(JSON.stringify(getCurrentGameState(stateSignals, configSignals))); debugger;
   requestAnimationFrame(() => gameLoop(gThis));
 }

@@ -6,6 +6,7 @@ import { getRandomSeed } from "./getRandomSeed.mjs";
 import { handleBreakBlock } from "./handleBreakBlock.mjs";
 import { handleFarmAction } from "./handleFarmAction.mjs";
 import { resizeCanvas } from "./resizeCanvas.mjs";
+import { runCompress } from "./compression.mjs";
 import { selectSeed } from "./selectSeed.mjs";
 import { toggleBreakMode } from "./toggleBreakMode.mjs";
 import { toggleView } from "./toggleView.mjs";
@@ -182,6 +183,87 @@ export function setupDocumentEventListeners(gThis) {
     const seedInput = doc.getElementById("worldSeedInput");
 
     await copyToClipboard(gThis, seedInput.value);
+  });
+
+  const saveCompressedBtn = doc.getElementById("saveCompressedState");
+  saveCompressedBtn.addEventListener("click", async function () {
+    try {
+      const saveState = gThis.spriteGarden.createSaveState(gThis);
+      const stateJSON = JSON.stringify(saveState);
+
+      await runCompress(gThis, stateJSON);
+      console.log("Game state saved successfully");
+    } catch (error) {
+      console.error("Failed to save game state:", error);
+      alert("Failed to save game state. Check console for details.");
+    }
+  });
+
+  const loadCompressedBtn = doc.getElementById("loadCompressedState");
+  loadCompressedBtn.addEventListener("click", async function () {
+    try {
+      const currentSeedDisplay = doc.getElementById("currentSeed");
+      const seedInput = doc.getElementById("worldSeedInput");
+
+      let file;
+
+      // Feature detection for showOpenFilePicker
+      if (gThis.showOpenFilePicker) {
+        const [fileHandle] = await gThis.showOpenFilePicker({
+          types: [
+            {
+              description: "Sprite Garden Save Game Files",
+              accept: { "application/gzip": [".sgs"] },
+            },
+          ],
+        });
+
+        file = await fileHandle.getFile();
+      } else {
+        // Fallback for browsers without showOpenFilePicker
+        const input = doc.createElement("input");
+        input.type = "file";
+        input.accept = ".sgs";
+        input.style.display = "none";
+
+        doc.body.appendChild(input);
+
+        const filePromise = new Promise((resolve) => {
+          input.onchange = () => resolve(input.files[0]);
+        });
+
+        input.click();
+
+        file = await filePromise;
+
+        doc.body.removeChild(input);
+      }
+
+      let stateJSON;
+      // Feature detection for DecompressionStream
+      if ("DecompressionStream" in gThis) {
+        const decompressedStream = file
+          .stream()
+          .pipeThrough(new DecompressionStream("gzip"));
+
+        const decompressedBlob = await new Response(decompressedStream).blob();
+
+        stateJSON = await decompressedBlob.text();
+      }
+
+      const saveState = JSON.parse(stateJSON);
+
+      gThis.spriteGarden.loadSaveState(gThis, saveState);
+
+      const { worldSeed } = saveState.config;
+      seedInput.value = worldSeed;
+      currentSeedDisplay.textContent = worldSeed;
+
+      console.log("Game state loaded successfully");
+    } catch (error) {
+      console.error("Failed to load game state:", error);
+      alert("Failed to load game state. Check console for details.");
+    }
   });
 }
 
