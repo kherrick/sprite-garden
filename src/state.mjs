@@ -1,9 +1,10 @@
+import { Signal } from "../deps/signal.mjs";
+
 import { createSaveState } from "./createSaveState.mjs";
 import { getBiome } from "./getBiome.mjs";
 import { getRandomSeed } from "./getRandomSeed.mjs";
 import { loadSaveState } from "./loadSaveState.mjs";
 
-import { Signal } from "./signal.mjs";
 
 const getT = (v) => ({
   crop: false,

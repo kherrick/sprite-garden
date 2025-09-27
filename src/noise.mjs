@@ -1,5 +1,5 @@
-import { createNoise2D } from "https://esm.run/simplex-noise";
-import alea from "https://esm.run/alea";
+import { createNoise2D } from "../deps/simplex-noise.mjs";
+import alea from "../deps/alea.mjs";
 
 // Global noise function with seeded generator
 let noise2D = null;

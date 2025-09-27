@@ -18,7 +18,10 @@ body {
 }
 
 #gameContainer {
+  align-items: center;
+  display: flex;
   height: 100vh;
+  justify-content: center;
   overflow: hidden;
   position: relative;
   width: 100vw;
@@ -38,16 +41,25 @@ body {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   height: 100dvh;
+  pointer-events: none;
   position: absolute;
   top: 0;
   width: 100dvw;
 }
 
 .ui-grid__corner {
+  overflow: hidden;
   padding: 0.625rem;
+  pointer-events: auto;
+  transition: height 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.5);
 }
 
-.ui-grid__corner-heading {
+.ui-grid__corner--heading {
+  cursor: pointer;
+  margin-bottom: 0.3125rem;
+}
+
+.ui-grid__corner--sub-heading {
   margin-bottom: 0.3125rem;
 }
 
@@ -96,10 +108,7 @@ body {
   border-radius: 0.5rem;
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   color: white;
-  left: 0.625rem;
   padding: 0.5rem;
-  top: 0.625rem;
-  z-index: 100;
 }
 
 /* Settings Panel */
@@ -111,10 +120,7 @@ body {
   color: white;
   display: flex;
   flex-direction: column;
-  position: fixed;
-  right: 0.625rem;
-  top: 0.625rem;
-  z-index: 1000;
+  padding: 0.5rem;
 }
 
 /* Inventory Panel */
@@ -126,8 +132,6 @@ body {
   bottom: 1.625rem;
   color: white;
   padding: 0.5rem;
-  right: 0.625rem;
-  z-index: 100;
 }
 
 /* Controls Panel */
@@ -137,10 +141,12 @@ body {
   border-radius: 0.5rem;
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   color: white;
-  padding: 0.5rem;
-  z-index: 100;
-  position: relative;
   font-size: 0.5rem;
+  padding: 0.5rem;
+}
+
+.control-instruction {
+  padding: 0.25rem 0;
 }
 
 /* Mobile Touch Controls */
@@ -257,6 +263,10 @@ select:focus {
   border: 0.125rem solid #fff;
 }
 
+#resolution {
+  margin-bottom: 0.5rem;
+}
+
 /* Desktop Resolution Classes */
 .resolution-400 #canvas {
   border: 0.125rem solid #333;
@@ -273,10 +283,7 @@ select:focus {
 }
 
 .desktop-resolution #gameContainer {
-  align-items: center;
   background: #2c3e50;
-  display: flex;
-  justify-content: center;
 }
 
 .seed-controls {
@@ -287,19 +294,18 @@ select:focus {
   margin: 0.625rem 0;
   padding: 0.625rem;
   position: absolute;
-  z-index: 999;
 }
 
 .seed-controls__actions {
-  display: flex;
-  gap: 0.625rem;
   align-items: center;
+  display: flex;
   flex-wrap: wrap;
+  gap: 0.625rem;
 }
 
 .seed-controls h4 {
-  margin: 0 0 0.625rem 0;
   color: white;
+  margin: 0 0 0.625rem 0;
 }
 
 .seed-controls input {
@@ -311,6 +317,47 @@ select:focus {
 
 .seed-controls input:focus {
   outline: 0.125rem solid #4a90e2;
+}
+
+.tile-btn {
+  background: white;
+  border-radius: 0.125rem;
+  border: 0.0625rem solid #ccc;
+  cursor: pointer;
+  font-size: 0.625rem;
+  padding: 0.25rem 0.375rem;
+  transition: all 0.2s;
+}
+
+.tile-btn:hover {
+  border-color: #666;
+  transform: scale(1.05);
+}
+
+.tile-btn.selected {
+  background: #e6f3ff;
+  border-color: #0066cc;
+  border-width: 0.125rem;
+  font-weight: bold;
+}
+
+#mapEditor {
+  border-top: 0.0625rem solid #ccc;
+  margin-top: 0.625rem;
+  padding-top: 0.625rem;
+}
+
+#mapEditorControls {
+  margin-top: 0.3125rem;
+}
+
+#mapEditorControls > div {
+  margin-bottom: 0.5rem;
+}
+
+#brushSizeSelect {
+  margin-left: 0.3125rem;
+  padding: 0.125rem;
 }
 
 #generateWithSeed {
@@ -344,9 +391,9 @@ select:focus {
 }
 
 .current-seed {
-  margin-top: 0.5rem;
   color: #bbb;
   font-size: 0.6875rem;
+  margin-top: 0.5rem;
 }
 
 /* Mobile Responsive */
@@ -377,8 +424,8 @@ select:focus {
   }
 
   .seed-controls button {
-    padding: 0.25rem 0.5rem;
     font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
   }
 
   .seed-controls input {

@@ -8,24 +8,46 @@ import { handleFarmAction } from "./handleFarmAction.mjs";
 import { handlePlaceBlock } from "./handlePlaceBlock.mjs";
 import { resizeCanvas } from "./resizeCanvas.mjs";
 import { runCompress } from "./compression.mjs";
-import { selectSeed } from "./selectSeed.mjs";
 import { selectMaterial } from "./selectMaterial.mjs";
+import { selectSeed } from "./selectSeed.mjs";
 import { toggleBreakMode } from "./toggleBreakMode.mjs";
 import { toggleView } from "./toggleView.mjs";
 
+import editHandler from "../deps/konami-code-js.mjs"
+
 export function setupGlobalEventListeners(gThis) {
   // Setup event listeners
-  gThis.addEventListener("resize", () =>
-    resizeCanvas(gThis.document, configSignals),
-  );
+  gThis.addEventListener("resize", () => {
+    resizeCanvas(gThis.document, configSignals);
+  });
 
   // Input handling
   gThis.spriteGarden.keys = {};
   gThis.spriteGarden.touchKeys = {};
 }
 
+function handleCornerClick(e) {
+  const heading = e.currentTarget;
+
+  const cornerContainer = heading.nextElementSibling;
+  if (cornerContainer.getAttribute("hidden") !== null) {
+    cornerContainer.removeAttribute("hidden");
+
+    return;
+  }
+
+  cornerContainer.setAttribute("hidden", "hidden");
+}
+
 export function setupDocumentEventListeners(gThis) {
   const doc = gThis.document;
+
+  // Edit
+  new editHandler((handler) => {
+    doc.getElementById('mapEditor').removeAttribute('hidden');
+    
+    handler.disable();
+  })
 
   // Keyboard events
   doc.addEventListener("keydown", (e) => {
@@ -83,7 +105,7 @@ export function setupDocumentEventListeners(gThis) {
       );
     }
 
-    // Handle block placement - I, O, K, L keys
+    // Handle block placement - I, O, K, L, "," and "." keys
     if (["i", "o", "k", "l", ",", "."].includes(e.key.toLowerCase())) {
       handlePlaceBlock(
         getCurrentGameState(stateSignals, configSignals),
@@ -277,39 +299,17 @@ export function setupDocumentEventListeners(gThis) {
       alert("Failed to load game state. Check console for details.");
     }
   });
+
+  const corners = doc.querySelectorAll(".ui-grid__corner");
+
+  corners.forEach((corner) => {
+    const heading = corner.querySelector(".ui-grid__corner--heading");
+
+    heading.addEventListener("click", (e) => handleCornerClick(e));
+  });
 }
 
 export function setupElementEventListeners(doc) {
-  doc.getElementById("stats").addEventListener("click", (e) => {
-    e.stopPropagation();
-
-    doc.getElementById("ui-grid").toggleAttribute("hidden");
-  });
-
-  doc.getElementById("gameContainer").addEventListener("click", (e) => {
-    e.stopPropagation();
-
-    const uiGrid = doc.getElementById("ui-grid");
-
-    if (uiGrid.getAttribute("hidden") !== null) {
-      uiGrid.removeAttribute("hidden");
-    }
-  });
-
-  doc.getElementById("gameContainer").addEventListener("touchend", (e) => {
-    const uiGrid = doc.getElementById("ui-grid");
-
-    if (uiGrid.getAttribute("hidden") !== null) {
-      uiGrid.removeAttribute("hidden");
-    }
-  });
-
-  doc.getElementById("controls").addEventListener("click", (e) => {
-    e.stopPropagation();
-
-    doc.getElementById("touchControls").toggleAttribute("hidden");
-  });
-
   const resolutionSelectEl = doc.getElementById("resolutionSelect");
   if (resolutionSelectEl) {
     resolutionSelectEl.addEventListener("change", (e) => {

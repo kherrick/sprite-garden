@@ -1,3 +1,4 @@
+import { mapEditorState } from "./mapEditor.mjs";
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 
 // Helper function to check if a tile position is part of a mature plant structure
@@ -33,6 +34,12 @@ function getMaterialFromTile(tile, TILES) {
 }
 
 export function handleBreakBlock(currentState, game, doc, mode = "regular") {
+  if (mapEditorState.isEnabled) {
+    console.log("Breaking disabled in map editor mode");
+
+    return;
+  }
+
   const { player, world, TILES, TILE_SIZE, WORLD_WIDTH, WORLD_HEIGHT } =
     currentState;
 

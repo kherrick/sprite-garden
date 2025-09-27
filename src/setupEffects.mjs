@@ -1,5 +1,6 @@
+import { effect } from "../deps/signal.mjs";
+
 import { computedSignals, configSignals, stateSignals } from "./state.mjs";
-import { effect } from "./signal.mjs";
 import { updateInventoryDisplay } from "./updateInventoryDisplay.mjs";
 
 export function setupEffects(doc) {

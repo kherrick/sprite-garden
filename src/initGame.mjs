@@ -1,6 +1,7 @@
 import { configSignals, initState } from "./state.mjs";
 import { gameLoop } from "./gameLoop.mjs";
 import { generateNewWorld } from "./generateWorld.mjs";
+import { initMapEditor } from "./mapEditor.mjs";
 import { resizeCanvas } from "./resizeCanvas.mjs";
 
 import {
@@ -31,6 +32,8 @@ export async function initGame(doc, cnvs) {
   setupEffects(doc);
   setupTouchControls(globalThis);
   setupTileInspection(cnvs);
+
+  initMapEditor(doc);
 
   resizeCanvas(doc, configSignals);
   generateNewWorld(doc);
