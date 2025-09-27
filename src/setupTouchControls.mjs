@@ -12,19 +12,20 @@ export function setupTouchControls(gThis) {
 
     // Touch start
     btn.addEventListener("touchstart", (e) => {
-      e.stopPropagation();
       e.preventDefault();
+      e.stopPropagation();
+
       gThis.spriteGarden.touchKeys[key] = true;
       btn.style.background = "rgba(255, 255, 255, 0.3)";
 
       // Handle special actions
-      if (key === "e") {
+      if (key === "f") {
         handleFarmAction(
           getCurrentGameState(stateSignals, configSignals),
           gThis.spriteGarden,
           gThis.document,
         );
-      } else if (key === "q") {
+      } else if (key === "r") {
         handleBreakBlock(
           getCurrentGameState(stateSignals, configSignals),
           gThis.spriteGarden,
@@ -36,8 +37,8 @@ export function setupTouchControls(gThis) {
 
     // Touch end
     btn.addEventListener("touchend", (e) => {
-      e.stopPropagation();
       e.preventDefault();
+      e.stopPropagation();
 
       gThis.spriteGarden.touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
@@ -45,8 +46,8 @@ export function setupTouchControls(gThis) {
 
     // Touch cancel
     btn.addEventListener("touchcancel", (e) => {
-      e.stopPropagation();
       e.preventDefault();
+      e.stopPropagation();
 
       gThis.spriteGarden.touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
@@ -54,19 +55,19 @@ export function setupTouchControls(gThis) {
 
     // Mouse events for desktop testing
     btn.addEventListener("mousedown", (e) => {
-      e.stopPropagation();
       e.preventDefault();
+      e.stopPropagation();
 
       gThis.spriteGarden.touchKeys[key] = true;
       btn.style.background = "rgba(255, 255, 255, 0.3)";
 
-      if (key === "e") {
+      if (key === "f") {
         handleFarmAction(
           getCurrentGameState(stateSignals, configSignals),
           gThis.spriteGarden,
           gThis.document,
         );
-      } else if (key === "q") {
+      } else if (key === "r") {
         handleBreakBlock(
           getCurrentGameState(stateSignals, configSignals),
           gThis.spriteGarden,
@@ -77,14 +78,15 @@ export function setupTouchControls(gThis) {
     });
 
     btn.addEventListener("mouseup", (e) => {
-      e.stopPropagation();
       e.preventDefault();
+      e.stopPropagation();
 
       gThis.spriteGarden.touchKeys[key] = false;
       btn.style.background = "rgba(0, 0, 0, 0.6)";
     });
 
     btn.addEventListener("mouseleave", (e) => {
+      e.preventDefault();
       e.stopPropagation();
 
       gThis.spriteGarden.touchKeys[key] = false;

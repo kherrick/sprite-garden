@@ -13,7 +13,7 @@ import { selectSeed } from "./selectSeed.mjs";
 import { toggleBreakMode } from "./toggleBreakMode.mjs";
 import { toggleView } from "./toggleView.mjs";
 
-import editHandler from "../deps/konami-code-js.mjs"
+import editHandler from "../deps/konami-code-js.mjs";
 
 export function setupGlobalEventListeners(gThis) {
   // Setup event listeners
@@ -27,6 +27,9 @@ export function setupGlobalEventListeners(gThis) {
 }
 
 function handleCornerClick(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
   const heading = e.currentTarget;
 
   const cornerContainer = heading.nextElementSibling;
@@ -44,10 +47,10 @@ export function setupDocumentEventListeners(gThis) {
 
   // Edit
   new editHandler((handler) => {
-    doc.getElementById('mapEditor').removeAttribute('hidden');
-    
+    doc.getElementById("mapEditor").removeAttribute("hidden");
+
     handler.disable();
-  })
+  });
 
   // Keyboard events
   doc.addEventListener("keydown", (e) => {
@@ -90,13 +93,13 @@ export function setupDocumentEventListeners(gThis) {
     }
 
     // Handle farming actions
-    if (e.key.toLowerCase() === "e") {
+    if (e.key.toLowerCase() === "f") {
       handleFarmAction(
         getCurrentGameState(stateSignals, configSignals),
         gThis.spriteGarden,
         doc,
       );
-    } else if (e.key.toLowerCase() === "q") {
+    } else if (e.key.toLowerCase() === "r") {
       handleBreakBlock(
         getCurrentGameState(stateSignals, configSignals),
         gThis.spriteGarden,
@@ -105,8 +108,9 @@ export function setupDocumentEventListeners(gThis) {
       );
     }
 
-    // Handle block placement - I, O, K, L, "," and "." keys
-    if (["i", "o", "k", "l", ",", "."].includes(e.key.toLowerCase())) {
+    // Handle block placement keys
+    const blockKeys = ["u", "i", "o", "j", "k", "l", "m", ",", "."];
+    if (blockKeys.includes(e.key.toLowerCase())) {
       handlePlaceBlock(
         getCurrentGameState(stateSignals, configSignals),
         gThis.spriteGarden,
@@ -310,6 +314,12 @@ export function setupDocumentEventListeners(gThis) {
 }
 
 export function setupElementEventListeners(doc) {
+  doc.getElementById("controls").addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    doc.getElementById("touchControls").toggleAttribute("hidden");
+  });
+
   const resolutionSelectEl = doc.getElementById("resolutionSelect");
   if (resolutionSelectEl) {
     resolutionSelectEl.addEventListener("change", (e) => {

@@ -55,8 +55,19 @@ body {
 }
 
 .ui-grid__corner--heading {
+  backdrop-filter: blur(0.3125rem);
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 0.5rem;
+  border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+  color: white;
   cursor: pointer;
-  margin-bottom: 0.3125rem;
+  font-size: 0.75rem;
+  padding: 0.75rem;
+}
+
+.ui-grid__corner--container {
+  cursor: pointer;
+  padding: 0.5rem;
 }
 
 .ui-grid__corner--sub-heading {
@@ -98,7 +109,6 @@ body {
 #inventory,
 .seed-controls {
   font-size: 0.5625rem;
-  padding: 0.25rem;
 }
 
 /* Stats Panel */
@@ -108,7 +118,6 @@ body {
   border-radius: 0.5rem;
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   color: white;
-  padding: 0.5rem;
 }
 
 /* Settings Panel */
@@ -120,7 +129,6 @@ body {
   color: white;
   display: flex;
   flex-direction: column;
-  padding: 0.5rem;
 }
 
 /* Inventory Panel */
@@ -131,7 +139,6 @@ body {
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   bottom: 1.625rem;
   color: white;
-  padding: 0.5rem;
 }
 
 /* Controls Panel */
@@ -141,8 +148,6 @@ body {
   border-radius: 0.5rem;
   border: 0.0625rem solid rgba(255, 255, 255, 0.1);
   color: white;
-  font-size: 0.5rem;
-  padding: 0.5rem;
 }
 
 .control-instruction {
@@ -168,7 +173,7 @@ body {
   font-size: 1rem;
   height: 3.5rem;
   justify-content: center;
-  margin: 0.3125rem;
+  padding: 1.75rem;
   touch-action: manipulation;
   user-select: none;
   width: 3.5rem;
@@ -185,26 +190,67 @@ body {
   grid-template-columns: 3.125rem 3.125rem 3.125rem;
   grid-template-rows: 3.125rem 3.125rem 3.125rem;
   justify-content: left;
-  margin-bottom: 0.625rem;
   position: relative;
-  z-index: 200;
 }
 
-.dpad .touch-btn:nth-child(1) {
+.dpad .up-left {
+  grid-column: 1;
+  grid-row: 1;
+  margin-left: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0;
+  z-index: 1;
+}
+
+.dpad .up {
   grid-column: 2;
   grid-row: 1;
+  margin-left: 0.125rem;
 }
-.dpad .touch-btn:nth-child(2) {
+
+.dpad .up-right {
+  grid-column: 3;
+  grid-row: 1;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0;
+  z-index: 1;
+}
+
+.dpad .left {
   grid-column: 1;
   grid-row: 2;
+  margin-top: 0.125rem;
 }
-.dpad .touch-btn:nth-child(3) {
+
+.dpad .right {
   grid-column: 3;
   grid-row: 2;
+  margin-top: 0.125rem;
 }
-.dpad .touch-btn:nth-child(4) {
+
+.dpad .down-left {
+  grid-column: 1;
+  grid-row: 3;
+  margin-bottom: 0.5rem;
+  margin-left: 0.5rem;
+  padding: 0;
+  z-index: 1;
+}
+
+.dpad .down {
   grid-column: 2;
   grid-row: 3;
+  margin-left: 0.125rem;
+}
+
+.dpad .down-right {
+  grid-column: 3;
+  grid-row: 3;
+  margin-bottom: 0.5rem;
+  margin-right: 0.5rem;
+  padding: 0;
+  z-index: 1;
 }
 
 .action-buttons {
@@ -313,6 +359,7 @@ select:focus {
   margin-left: 0.3125rem;
   padding: 0.125rem 0.3125rem;
   width: 5rem;
+  font-size: 0.5rem;
 }
 
 .seed-controls input:focus {
@@ -398,25 +445,22 @@ select:focus {
 
 /* Mobile Responsive */
 @media (min-width: 30rem) {
+  .ui-grid__corner--heading {
+    font-size: 1rem;
+  }
+
   #stats,
   #controls,
   #settings,
   #inventory,
   .seed-controls {
     font-size: 0.725rem;
-    padding: 0.5rem;
   }
 
   .touch-btn {
     font-size: 0.75rem;
     height: 3rem;
     width: 3rem;
-  }
-
-  .dpad {
-    gap: 0.1875rem;
-    grid-template-columns: 2.5rem 2.5rem 2.5rem;
-    grid-template-rows: 2.5rem 2.5rem 2.5rem;
   }
 
   .seed-controls {
@@ -434,25 +478,19 @@ select:focus {
 }
 
 @media (min-width: 48rem) {
+  .ui-grid__corner--heading {
+    font-size: 1.25rem;
+  }
+
   #stats,
   #controls,
   #settings,
   #inventory,
   .seed-controls {
-    font-size: 1rem;
-    padding: 0.75rem;
-  }
-
-  #seeds {
-    margin-bottom: 0.3125rem;
+    font-size: 1.25rem;
   }
 
   .touch-btn {
     font-size: 0.875rem;
-  }
-
-  .dpad {
-    grid-template-columns: 2.8125rem 2.8125rem 2.8125rem;
-    grid-template-rows: 2.8125rem 2.8125rem 2.8125rem;
   }
 }

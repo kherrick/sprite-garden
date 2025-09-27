@@ -22,26 +22,77 @@ export function updatePlayer(gThis) {
   }
 
   // Handle horizontal movement and track direction
-  if (isKeyPressed(gThis, "a") || isKeyPressed(gThis, "arrowleft")) {
-    updatedPlayer.velocityX = -updatedPlayer.speed;
+  let horizontalInput = 0;
+  let verticalInput = 0;
+
+  // Check for diagonal inputs first
+  if (isKeyPressed(gThis, "upleft")) {
+    horizontalInput = -1;
+    verticalInput = -1;
     updatedPlayer.lastDirection = -1;
-  } else if (isKeyPressed(gThis, "d") || isKeyPressed(gThis, "arrowright")) {
-    updatedPlayer.velocityX = updatedPlayer.speed;
+  } else if (isKeyPressed(gThis, "upright")) {
+    horizontalInput = 1;
+    verticalInput = -1;
     updatedPlayer.lastDirection = 1;
+  } else if (isKeyPressed(gThis, "downleft")) {
+    horizontalInput = -1;
+    verticalInput = 1;
+    updatedPlayer.lastDirection = -1;
+  } else if (isKeyPressed(gThis, "downright")) {
+    horizontalInput = 1;
+    verticalInput = 1;
+    updatedPlayer.lastDirection = 1;
+  } else {
+    // Check for individual directional inputs
+    if (isKeyPressed(gThis, "a") || isKeyPressed(gThis, "arrowleft")) {
+      horizontalInput = -1;
+      updatedPlayer.lastDirection = -1;
+    } else if (isKeyPressed(gThis, "d") || isKeyPressed(gThis, "arrowright")) {
+      horizontalInput = 1;
+      updatedPlayer.lastDirection = 1;
+    }
+
+    // Vertical input for diagonal movement (not jumping)
+    if (isKeyPressed(gThis, "s")) {
+      verticalInput = 1;
+    }
+  }
+
+  // Apply horizontal movement with minimum movement threshold
+  if (horizontalInput !== 0) {
+    const targetVelocity = horizontalInput * updatedPlayer.speed;
+
+    // If we're starting from zero velocity or changing direction, apply minimal acceleration
+    if (
+      Math.abs(updatedPlayer.velocityX) < 0.5 ||
+      Math.sign(updatedPlayer.velocityX) !== Math.sign(targetVelocity)
+    ) {
+      updatedPlayer.velocityX = targetVelocity * 0.3; // Much slower initial movement
+    } else {
+      updatedPlayer.velocityX = targetVelocity;
+    }
   } else {
     updatedPlayer.velocityX *= FRICTION;
     updatedPlayer.lastDirection = 0;
   }
 
-  // Handle jumping
+  // Handle jumping (including diagonal up movements)
   if (
     (isKeyPressed(gThis, "w") ||
       isKeyPressed(gThis, "arrowup") ||
-      isKeyPressed(gThis, " ")) &&
+      isKeyPressed(gThis, " ") ||
+      isKeyPressed(gThis, "upleft") ||
+      isKeyPressed(gThis, "upright")) &&
     updatedPlayer.onGround
   ) {
     updatedPlayer.velocityY = -updatedPlayer.jumpPower;
     updatedPlayer.onGround = false;
+  }
+
+  // For diagonal movement, apply a slight speed reduction to maintain balance
+  if (horizontalInput !== 0 && verticalInput !== 0) {
+    const diagonalSpeedMultiplier = 0.707; // 1/√2 for proper diagonal speed
+    updatedPlayer.velocityX *= diagonalSpeedMultiplier;
   }
 
   // Move horizontally
@@ -89,6 +140,7 @@ export function updatePlayer(gThis) {
   );
 
   // Update camera to follow player
+  const canvas = gThis.document?.getElementById("canvas");
   const targetCameraX =
     updatedPlayer.x + updatedPlayer.width / 2 - canvas.width / 2;
   const targetCameraY =

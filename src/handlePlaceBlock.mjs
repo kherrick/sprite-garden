@@ -39,15 +39,19 @@ export function handlePlaceBlock(currentState, game, doc, key) {
 
   // Determine placement position based on key pressed
   switch (key.toLowerCase()) {
-    case "i": // Top left
+    case "u": // Top left
       targetX = playerTileX - 1;
+      targetY = playerTileY - 1;
+      break;
+    case "i": // Top
+      targetX = playerTileX;
       targetY = playerTileY - 1;
       break;
     case "o": // Top right
       targetX = playerTileX + 1;
       targetY = playerTileY - 1;
       break;
-    case "k": // Left
+    case "j": // Left
       targetX = playerTileX - 1;
       targetY = playerTileY;
       break;
@@ -55,8 +59,12 @@ export function handlePlaceBlock(currentState, game, doc, key) {
       targetX = playerTileX + 1;
       targetY = playerTileY;
       break;
-    case ",": // Bottom Left
+    case "m": // Bottom Left
       targetX = playerTileX - 1;
+      targetY = playerTileY + 1;
+      break;
+    case ",": // Bottom
+      targetX = playerTileX;
       targetY = playerTileY + 1;
       break;
     case ".": // Bottom Right

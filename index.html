@@ -42,7 +42,6 @@
                   <option value="800">800x800</option>
                 </select>
               </div>
-              <button id="generateNewWorld">🌍 New World</button>
               <button id="toggleView">
                 🔍 <span id="viewModeText">Normal</span>
               </button>
@@ -265,11 +264,11 @@
           <div id="controls">
             <div class="ui-grid__corner--heading">⌨️ Controls</div>
             <div class="ui-grid__corner--container" hidden>
-              <div class="control-instruction">A/D or ←/→: Move</div>
-              <div class="control-instruction">W/↑/Space: Jump</div>
-              <div class="control-instruction">E: Plant/Harvest</div>
-              <div class="control-instruction">Q: Break Block</div>
-              <div class="control-instruction">./,/L/K/O/I: Place Block</div>
+              <div class="control-instruction">w/↑/Space: Jump</div>
+              <div class="control-instruction">f: Plant/Harvest</div>
+              <div class="control-instruction">r: Break Block</div>
+              <div class="control-instruction">a/d or ←/→: Move</div>
+              <div class="control-instruction">u/i/o/j/l/m/,/.: Set Block</div>
               <div class="control-instruction">Mouse: Inspect Tiles</div>
               <div class="control-instruction">Ctrl+S: World State</div>
             </div>
@@ -368,9 +367,10 @@
           <p>Current seed: <span id="currentSeed"></span></p>
         </div>
 
-        <h4>Load / Save Game</h4>
+        <h4>New / Load / Save Game</h4>
 
         <div class="seed-controls__save-load">
+          <button id="generateNewWorld">🌍 New World</button>
           <button id="loadCompressedState">Load Game</button>
           <button id="saveCompressedState">Save Game</button>
         </div>
@@ -379,15 +379,21 @@
       <!-- Mobile Touch Controls -->
       <div id="touchControls" hidden>
         <div class="dpad">
-          <div class="touch-btn" data-key="w">↑</div>
-          <div class="touch-btn" data-key="a">←</div>
-          <div class="touch-btn" data-key="d">→</div>
-          <div class="touch-btn" data-key="s">↓</div>
+          <div class="touch-btn up-left" data-key="upleft">↖</div>
+          <div class="touch-btn up" data-key="w">↑</div>
+          <div class="touch-btn up-right" data-key="upright">↗</div>
+
+          <div class="touch-btn left" data-key="a">←</div>
+          <div class="touch-btn right" data-key="d">→</div>
+
+          <div class="touch-btn down-left" data-key="downleft">↙</div>
+          <div class="touch-btn down" data-key="s">↓</div>
+          <div class="touch-btn down-right" data-key="downright">↘</div>
         </div>
         <div class="action-buttons">
           <div class="touch-btn" data-key=" ">🦘</div>
-          <div class="touch-btn" data-key="e">🌱</div>
-          <div class="touch-btn" data-key="q">⛏️</div>
+          <div class="touch-btn" data-key="r">⛏️</div>
+          <div class="touch-btn" data-key="f">🌱</div>
         </div>
       </div>
     </div>

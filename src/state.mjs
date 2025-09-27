@@ -5,7 +5,6 @@ import { getBiome } from "./getBiome.mjs";
 import { getRandomSeed } from "./getRandomSeed.mjs";
 import { loadSaveState } from "./loadSaveState.mjs";
 
-
 const getT = (v) => ({
   crop: false,
   farmable: false,
