@@ -217,7 +217,7 @@ export function initDocumentEventListeners(gThis, shadow) {
       .removeAttribute("hidden");
     shadow.getElementById("examplesBtnContainer").removeAttribute("hidden");
     shadow
-      .querySelector('option[value="fullscreen"]')
+      .querySelector('sprite-garden-option[value="fullscreen"]')
       .removeAttribute("hidden");
 
     const customizeColorsDialog = shadow.getElementById(
@@ -858,13 +858,17 @@ export function initElementEventListeners(gThis, shadow) {
 
   const resolutionSelectEl = shadow.getElementById("resolutionSelect");
   if (resolutionSelectEl) {
-    resolutionSelectEl.addEventListener("change", (e) => {
-      if (e.currentTarget instanceof HTMLSelectElement) {
-        gameConfig.currentResolution.set(e.currentTarget.value);
+    resolutionSelectEl.addEventListener(
+      "change",
+      (
+        /** @type {CustomEvent} */
+        e,
+      ) => {
+        gameConfig.currentResolution.set(e.detail.value);
 
         resizeCanvas(shadow, gameConfig);
-      }
-    });
+      },
+    );
   }
 
   const toggleBtn = shadow.getElementById("toggleView");

@@ -8,6 +8,10 @@ import { harvestCrop } from "./harvestCrop.mjs";
 import { harvestMaturePlant } from "./harvestMaturePlant.mjs";
 import { plantSeed } from "./plantSeed.mjs";
 
+// Cooldown to prevent error messages from overwriting success messages
+let lastSuccessfulActionTime = 0;
+const ACTION_COOLDOWN_MS = 500;
+
 /** @typedef {import('signal-polyfill').Signal.State} Signal.State */
 
 /** @typedef {import('../state/config/tiles.mjs').TileMap} TileMap */
@@ -248,7 +252,13 @@ export function handleFarmAction(
     tryFarmingAction(params, pos),
   );
 
-  if (!actionPerformed) {
-    showMessage(shadow, world, playerTileX, playerTileY, "farm");
+  if (actionPerformed) {
+    lastSuccessfulActionTime = Date.now();
+  } else {
+    // Only show error if we're not within the cooldown period of a successful action
+    const timeSinceLastSuccess = Date.now() - lastSuccessfulActionTime;
+    if (timeSinceLastSuccess > ACTION_COOLDOWN_MS) {
+      showMessage(shadow, world, playerTileX, playerTileY, "farm");
+    }
   }
 }

@@ -3,6 +3,8 @@ import { colors as gameColors } from "./src/state/config/colors.mjs";
 import { generateColorVars } from "./src/util/colors/generateColorVars.mjs";
 import { initGame } from "./src/init/game.mjs";
 
+import "./src/components/select.mjs";
+
 export const tagName = "sprite-garden";
 
 /**
@@ -35,6 +37,12 @@ export class SpriteGarden extends HTMLElement {
             position: relative;
             width: var(--sg-ui-host-width, 100vw);
             width: var(--sg-ui-host-width, 100dvw);
+
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
 
             ${generateColorVars("--sg-color-", gameColors["color"])}
             ${generateColorVars("--sg-tile-", gameColors["tile"])}
@@ -486,8 +494,6 @@ export class SpriteGarden extends HTMLElement {
             flex-direction: column;
           }
 
-          #settings #resolution,
-          #settings select,
           #settings button {
             width: 100%;
           }
@@ -561,7 +567,6 @@ export class SpriteGarden extends HTMLElement {
             justify-content: center;
             padding: 0.125rem;
             touch-action: manipulation;
-            user-select: none;
             width: 3.25rem;
             z-index: 3;
           }
@@ -771,8 +776,7 @@ export class SpriteGarden extends HTMLElement {
           }
 
           /* Button Styles */
-          button,
-          select {
+          button {
             background: var(--sg-color-green-500);
             border-radius: 0.25rem;
             border: none;
@@ -791,15 +795,6 @@ export class SpriteGarden extends HTMLElement {
 
           button:active {
             transform: scale(0.95);
-          }
-
-          select {
-            background: var(--sg-color-gray-900);
-            border: 0.0625rem solid var(--sg-color-neutral-950);
-          }
-
-          select:focus {
-            outline: 0.125rem solid var(--sg-color-green-500);
           }
 
           .material-btn,
@@ -942,8 +937,10 @@ export class SpriteGarden extends HTMLElement {
           }
 
           #resolution {
-            display: inline;
-            margin-bottom: 0.5rem;
+            display: block;
+            margin: 0 0  0.25rem 0.125rem;
+            width: 100%;
+            position: relative;
           }
 
           /* Desktop Resolution Classes */
@@ -1435,13 +1432,11 @@ export class SpriteGarden extends HTMLElement {
               <div class="ui-grid__corner--container" hidden="hidden">
                 <div class="settings-actions">
                   <div id="resolution">
-                    <select id="resolutionSelect">
-                      <option value="400">400x400</option>
-                      <option value="800">800x800</option>
-                      <option hidden="hidden" value="fullscreen">
-                        Fullscreen
-                      </option>
-                    </select>
+                    <sprite-garden-select id="resolutionSelect" value="400">
+                      <sprite-garden-option value="400">400x400</sprite-garden-option>
+                      <sprite-garden-option value="800">800x800</sprite-garden-option>
+                      <sprite-garden-option hidden="hidden" value="fullscreen">Fullscreen</sprite-garden-option>
+                    </sprite-garden-select>
                   </div>
                   <button id="worldState">🌍 World State</button>
                   <button id="toggleView">
